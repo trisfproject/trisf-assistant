@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/banner.png" alt="trisf-assistant banner">
+</p>
+
 # 🤖 trisf-assistant
 
 **trisf-assistant** adalah Telegram group assistant bot untuk **internal tim** yang membantu mengelola shortcut notes, reminder operasional, runbook SOP, todo tracker, dan koordinasi aktivitas langsung dari dalam group.
