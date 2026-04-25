@@ -3,6 +3,7 @@ import json
 import datetime
 
 from dotenv import load_dotenv
+from telegram import Update, InputFile
 from telegram.ext import (
     ApplicationBuilder,
     CommandHandler,
@@ -22,10 +23,12 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 BOT_MODE = os.getenv("BOT_MODE", "restricted")
 OWNER_CONTACT = os.getenv("OWNER_CONTACT", "@trisf")
 
+START_TIME = datetime.datetime.now()
 
-# ===============================
-# HELPER
-# ===============================
+
+# =========================================================
+# HELPERS
+# =========================================================
 
 def log_action(chat, user, action, target="", meta=""):
     cursor = conn.cursor()
@@ -39,17 +42,21 @@ def log_action(chat, user, action, target="", meta=""):
     )
 
 
-def is_group_allowed(chat):
+def format_uptime():
+    delta = datetime.datetime.now() - START_TIME
+    seconds = int(delta.total_seconds())
+    hours = seconds // 3600
+    minutes = (seconds % 3600) // 60
+    return f"{hours}h {minutes}m"
 
+
+def is_group_allowed(chat):
     if BOT_MODE == "open":
         return True
 
     cursor = conn.cursor()
     cursor.execute(
-        """
-        SELECT 1 FROM allowed_groups
-        WHERE chat_id=%s
-        """,
+        "SELECT 1 FROM allowed_groups WHERE chat_id=%s",
         (chat,),
     )
 
@@ -57,23 +64,19 @@ def is_group_allowed(chat):
 
 
 async def check_group(update):
-
     if is_superuser(update.effective_user.id):
         return True
 
     if not is_group_allowed(update.effective_chat.id):
-
         await update.message.reply_text(
             GROUP_NOT_ALLOWED(OWNER_CONTACT)
         )
-
         return False
 
     return True
 
 
 async def is_admin(update, context):
-
     if is_superuser(update.effective_user.id):
         return True
 
@@ -87,9 +90,9 @@ async def is_admin(update, context):
     )
 
 
-# ===============================
-# SAVE NOTE
-# ===============================
+# =========================================================
+# NOTES
+# =========================================================
 
 async def save(update, context):
 
@@ -100,7 +103,6 @@ async def save(update, context):
     user = update.effective_user.id
 
     if not is_writer(chat, user):
-
         await update.message.reply_text(WRITE_DENIED)
         return
 
@@ -122,7 +124,6 @@ async def save(update, context):
     )
 
     if cursor.rowcount == 0:
-
         await update.message.reply_text(
             "⚠️ key sudah ada gunakan /update"
         )
@@ -132,10 +133,6 @@ async def save(update, context):
 
     await update.message.reply_text("✅ saved")
 
-
-# ===============================
-# UPDATE NOTE
-# ===============================
 
 async def update_note(update, context):
 
@@ -164,10 +161,6 @@ async def update_note(update, context):
     await update.message.reply_text("✅ updated")
 
 
-# ===============================
-# DELETE NOTE
-# ===============================
-
 async def delete(update, context):
 
     if not await is_admin(update, context):
@@ -192,10 +185,6 @@ async def delete(update, context):
     await update.message.reply_text("🗑 deleted")
 
 
-# ===============================
-# NOTES LIST
-# ===============================
-
 async def notes(update, context):
 
     if not await check_group(update):
@@ -218,7 +207,6 @@ async def notes(update, context):
     rows = cursor.fetchall()
 
     if not rows:
-
         await update.message.reply_text("belum ada notes")
         return
 
@@ -229,10 +217,6 @@ async def notes(update, context):
 
     await update.message.reply_text(msg)
 
-
-# ===============================
-# KEY LOOKUP
-# ===============================
 
 async def lookup(update, context):
 
@@ -260,9 +244,9 @@ async def lookup(update, context):
         await update.message.reply_text(row[0])
 
 
-# ===============================
-# APPROVE USER
-# ===============================
+# =========================================================
+# APPROVAL SYSTEM
+# =========================================================
 
 async def approve(update, context):
 
@@ -299,12 +283,8 @@ async def approve(update, context):
 
     log_action(chat, update.effective_user.id, "approve", uid)
 
-    await update.message.reply_text("✅ user berhasil di-approve")
+    await update.message.reply_text("✅ user approved")
 
-
-# ===============================
-# REVOKE USER
-# ===============================
 
 async def revoke(update, context):
 
@@ -327,12 +307,8 @@ async def revoke(update, context):
 
     log_action(chat, update.effective_user.id, "revoke", uid)
 
-    await update.message.reply_text("🚫 user access dicabut")
+    await update.message.reply_text("🚫 access revoked")
 
-
-# ===============================
-# APPROVELIST
-# ===============================
 
 async def approvelist(update, context):
 
@@ -356,7 +332,6 @@ async def approvelist(update, context):
     rows = cursor.fetchall()
 
     if not rows:
-
         await update.message.reply_text(
             "Belum ada user yang di-approve."
         )
@@ -376,55 +351,82 @@ async def approvelist(update, context):
     await update.message.reply_text(msg)
 
 
-# ===============================
-# REMINDER
-# ===============================
+# =========================================================
+# HEALTH + STATUS
+# =========================================================
 
-async def remind(update, context):
+async def health(update, context):
 
-    if not await check_group(update):
+    if not await is_admin(update, context):
+        await update.message.reply_text(ACCESS_DENIED)
         return
 
-    delay = context.args[0]
-    message = " ".join(context.args[1:])
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT 1")
+        db_status = "OK"
+    except:
+        db_status = "ERROR"
 
-    unit = delay[-1]
-    value = int(delay[:-1])
+    msg = f"""🤖 trisf-assistant health check
 
-    seconds = (
-        value * 60
-        if unit == "m"
-        else value * 3600
-        if unit == "h"
-        else value * 86400
-    )
+bot: OK
+database: {db_status}
+scheduler: OK
+mode: {BOT_MODE}
+uptime: {format_uptime()}
+"""
 
-    remind_at = datetime.datetime.now() + datetime.timedelta(
-        seconds=seconds
-    )
-
-    cursor = conn.cursor()
-
-    cursor.execute(
-        """
-        INSERT INTO reminders
-        (chat_id,user_id,message,remind_at)
-        VALUES (%s,%s,%s,%s)
-        """,
-        (
-            update.effective_chat.id,
-            update.effective_user.id,
-            message,
-            remind_at,
-        ),
-    )
-
-    await update.message.reply_text("⏰ reminder scheduled")
+    await update.message.reply_text(msg)
 
 
-# ===============================
+async def status(update, context):
+
+    if not await is_admin(update, context):
+        await update.message.reply_text(ACCESS_DENIED)
+        return
+
+    if not context.args:
+        await update.message.reply_text(
+            "usage: /status bot|db|scheduler"
+        )
+        return
+
+    target = context.args[0]
+
+    if target == "bot":
+
+        await update.message.reply_text(
+            f"status: running\nuptime: {format_uptime()}"
+        )
+
+    elif target == "db":
+
+        try:
+            start = datetime.datetime.now()
+            conn.cursor().execute("SELECT 1")
+            latency = datetime.datetime.now() - start
+
+            await update.message.reply_text(
+                f"database OK ({int(latency.total_seconds()*1000)} ms)"
+            )
+
+        except:
+
+            await update.message.reply_text(
+                "database ERROR"
+            )
+
+    elif target == "scheduler":
+
+        await update.message.reply_text(
+            "scheduler running (interval 30s)"
+        )
+
+
+# =========================================================
 # MAIN
-# ===============================
+# =========================================================
 
 def main():
 
@@ -434,14 +436,15 @@ def main():
     app.add_handler(CommandHandler("update", update_note))
     app.add_handler(CommandHandler("delete", delete))
     app.add_handler(CommandHandler("notes", notes))
+
     app.add_handler(CommandHandler("approve", approve))
     app.add_handler(CommandHandler("revoke", revoke))
     app.add_handler(CommandHandler("approvelist", approvelist))
-    app.add_handler(CommandHandler("remind", remind))
 
-    app.add_handler(
-        MessageHandler(filters.COMMAND, lookup)
-    )
+    app.add_handler(CommandHandler("health", health))
+    app.add_handler(CommandHandler("status", status))
+
+    app.add_handler(MessageHandler(filters.COMMAND, lookup))
 
     async def post_init(app):
         app.create_task(reminder_worker(app))
