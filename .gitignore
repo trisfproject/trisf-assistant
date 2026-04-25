@@ -2,3 +2,4 @@
 __pycache__/
 *.log
 notes_backup.json
+.codex
