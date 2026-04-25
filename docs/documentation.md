@@ -10,10 +10,6 @@ trisf-assistant membantu tim operasional menyimpan shortcut knowledge, reminder,
 
 Dirancang untuk:
 
-* DevOps
-* Sysadmin
-* NOC
-* Infra team
 * Support operations
 * Technical community internal
 
@@ -24,6 +20,24 @@ chat_id namespace isolation
 ```
 
 Sehingga data antar group tidak saling bercampur.
+
+---
+
+# Command Quick Reference
+
+Command utama yang paling sering digunakan:
+
+```
+/save key value
+/notes
+/runbook
+/todo
+/remind
+/health
+/status
+/audit
+/approve
+```
 
 ---
 
@@ -186,7 +200,7 @@ Whitelist group:
 
 Approve writer pertama:
 
-reply user message:
+Reply user message:
 
 ```
 /approve
@@ -257,7 +271,7 @@ Delete notes:
 
 Approve writer:
 
-reply message:
+Reply message:
 
 ```
 /approve
@@ -419,6 +433,100 @@ Restore notes:
 ```
 
 Upload JSON file hasil export.
+
+---
+
+# Health Check Commands
+
+trisf-assistant menyediakan command monitoring runtime untuk membantu troubleshooting langsung dari Telegram group.
+
+Command ini tersedia untuk:
+
+* superuser
+* group admin
+
+---
+
+## /health
+
+Menampilkan status umum bot:
+
+```
+/health
+```
+
+Contoh output:
+
+```
+🤖 trisf-assistant health check
+
+bot: OK
+database: OK
+scheduler: OK
+mode: restricted
+uptime: 2h 14m
+```
+
+Digunakan untuk memastikan:
+
+* bot berjalan normal
+* database reachable
+* scheduler aktif
+* deployment mode aktif
+* runtime uptime
+
+---
+
+## /status bot
+
+Menampilkan runtime status bot:
+
+```
+/status bot
+```
+
+Contoh output:
+
+```
+status: running
+uptime: 2h 14m
+```
+
+---
+
+## /status db
+
+Menampilkan status koneksi database:
+
+```
+/status db
+```
+
+Contoh output:
+
+```
+database OK (4 ms)
+```
+
+Digunakan untuk troubleshooting koneksi database.
+
+---
+
+## /status scheduler
+
+Menampilkan status reminder worker:
+
+```
+/status scheduler
+```
+
+Contoh output:
+
+```
+scheduler running (interval 30s)
+```
+
+Digunakan untuk memastikan reminder scheduler aktif.
 
 ---
 
