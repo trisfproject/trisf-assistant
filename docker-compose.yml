@@ -1,0 +1,11 @@
+version: "3.8"
+
+services:
+  trisf-assistant:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: trisf-assistant
+    restart: always
+    env_file:
+      - .env
