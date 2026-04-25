@@ -2,6 +2,15 @@
   <img src="assets/banner.png" alt="trisf-assistant banner">
 </p>
 
+<p align="center">
+
+<img src="https://img.shields.io/badge/python-3.11+-blue.svg">
+<img src="https://img.shields.io/badge/docker-ready-blue.svg">
+<img src="https://img.shields.io/badge/license-MIT-green.svg">
+<img src="https://img.shields.io/badge/status-active-success.svg">
+
+</p>
+
 # 🤖 trisf-assistant
 
 **trisf-assistant** adalah Telegram group assistant bot untuk **internal tim** yang membantu mengelola shortcut notes, reminder operasional, runbook SOP, todo tracker, dan koordinasi aktivitas langsung dari dalam group.
