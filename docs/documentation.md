@@ -166,7 +166,15 @@ List todos for the current group:
 Add a todo:
 
 ```text
-/todo add check backup server
+/todo add restart nginx
+```
+
+Response:
+
+```text
+📝 Todo added
+
+#12 restart nginx
 ```
 
 Backward-compatible add:
@@ -178,15 +186,26 @@ Backward-compatible add:
 Mark a todo as completed:
 
 ```text
-/todo done 1
-/todo complete 1
+/todo done <id>
+/todo complete <id>
 ```
 
 Delete a todo:
 
 ```text
-/todo delete 1
+/todo delete <id>
 ```
+
+Todo list output uses permanent database IDs:
+
+```text
+📝 Todo list
+
+#12 restart nginx
+#14 check backup cron
+```
+
+Todo items use permanent IDs (example: `#12`). IDs remain stable even if other todos are deleted.
 
 `done` marks the todo as completed. `delete` removes the row.
 
