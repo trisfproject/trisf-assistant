@@ -13,6 +13,11 @@ from telegram.ext import (
 from app.features.approvals import approve, approvelist, revoke
 from app.features.afk import afk, afk_watcher
 from app.features.audit import audit
+from app.features.backup import (
+    export_handler,
+    import_document_handler,
+    import_handler,
+)
 from app.features.groups import allowedgroups, allowgroup, removegroup
 from app.features.health import health, status
 from app.features.notes import delete, lookup, notes, save, update_note
@@ -71,10 +76,18 @@ def main():
     app.add_handler(CommandHandler("audit", audit))
     app.add_handler(CommandHandler("afk", afk))
     app.add_handler(CommandHandler("oncall", oncall_handler))
+    app.add_handler(CommandHandler("export", export_handler))
+    app.add_handler(CommandHandler("import", import_handler))
 
     app.add_handler(CommandHandler("health", health))
     app.add_handler(CommandHandler("status", status))
 
+    app.add_handler(
+        MessageHandler(
+            filters.Document.FileExtension("json"),
+            import_document_handler,
+        )
+    )
     app.add_handler(MessageHandler(filters.COMMAND, lookup))
     app.add_handler(MessageHandler(filters.ALL, afk_watcher), group=1)
 
