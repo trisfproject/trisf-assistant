@@ -11,9 +11,13 @@ from telegram.ext import (
 )
 
 from app.features.approvals import approve, approvelist, revoke
+from app.features.afk import afk
+from app.features.audit import audit
 from app.features.groups import allowedgroups, allowgroup, removegroup
 from app.features.health import health, status
 from app.features.notes import delete, lookup, notes, save, update_note
+from app.features.reminders import remind
+from app.features.todos import todo
 from app.scheduler import reminder_worker
 
 load_dotenv()
@@ -58,6 +62,13 @@ def main():
     app.add_handler(CommandHandler("allowgroup", allowgroup))
     app.add_handler(CommandHandler("removegroup", removegroup))
     app.add_handler(CommandHandler("allowedgroups", allowedgroups))
+    app.add_handler(CommandHandler("allowlist", allowedgroups))
+    app.add_handler(CommandHandler("groups", allowedgroups))
+
+    app.add_handler(CommandHandler("todo", todo))
+    app.add_handler(CommandHandler("remind", remind))
+    app.add_handler(CommandHandler("audit", audit))
+    app.add_handler(CommandHandler("afk", afk))
 
     app.add_handler(CommandHandler("health", health))
     app.add_handler(CommandHandler("status", status))
