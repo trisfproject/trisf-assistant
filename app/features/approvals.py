@@ -51,13 +51,56 @@ async def revoke(update, context):
         return
 
     chat = update.effective_chat.id
+    uid = None
+    username = None
 
-    if not context.args:
+    if update.message.reply_to_message:
+        user = update.message.reply_to_message.from_user
+        uid = user.id
+        username = user.username
+
+    elif context.args:
+        target = context.args[0]
+
+        if target.startswith("@"):
+            username = target[1:]
+        elif target.isdigit():
+            uid = int(target)
+
+    if uid is None and username is None:
+        await update.message.reply_text(
+            "Usage:\n/revoke @username\nor reply to message then send:\n/revoke"
+        )
         return
 
-    uid = int(context.args[0])
-
     cursor = conn.cursor()
+
+    if uid is not None:
+        cursor.execute(
+            """
+            SELECT user_id,username
+            FROM approved_users
+            WHERE chat_id=%s AND user_id=%s
+            """,
+            (chat, uid),
+        )
+    else:
+        cursor.execute(
+            """
+            SELECT user_id,username
+            FROM approved_users
+            WHERE chat_id=%s AND username=%s
+            """,
+            (chat, username),
+        )
+
+    row = cursor.fetchone()
+
+    if not row:
+        await update.message.reply_text("⚠️ user not in approved list")
+        return
+
+    uid, stored_username = row
 
     cursor.execute(
         """
@@ -69,7 +112,8 @@ async def revoke(update, context):
 
     log_action(chat, update.effective_user.id, "revoke", uid)
 
-    await update.message.reply_text("🚫 access revoked")
+    label = f"@{stored_username}" if stored_username else str(uid)
+    await update.message.reply_text(f"✅ user revoked: {label}")
 
 
 async def approvelist(update, context):
