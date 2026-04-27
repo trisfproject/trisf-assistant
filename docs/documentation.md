@@ -32,6 +32,10 @@ Current registered command handlers:
 /status
 /id
 /chatid
+/ping
+/dns
+/http
+/whois
 ```
 
 Messages that start with `#` are handled as note lookups. For example, `#deploy` looks for a saved note with key `deploy`.
@@ -304,6 +308,105 @@ type:
 ```
 
 `thread_id` only appears when the command is executed inside a forum topic thread.
+
+## Network Utility Commands
+
+Check host reachability and latency:
+
+```text
+/ping <host>
+```
+
+Example:
+
+```text
+/ping google.com
+```
+
+Response format:
+
+```text
+📡 Ping result
+
+target:
+latency:
+status:
+```
+
+Query DNS records:
+
+```text
+/dns <domain> [record_type]
+```
+
+The default record type is `A`. Supported record types are:
+
+```text
+A
+AAAA
+MX
+TXT
+NS
+CNAME
+```
+
+Examples:
+
+```text
+/dns google.com
+/dns google.com mx
+```
+
+Response format:
+
+```text
+🌐 DNS lookup
+
+domain:
+type:
+
+records
+```
+
+Check HTTP endpoint availability:
+
+```text
+/http <url>
+```
+
+If the URL has no scheme, the bot prepends `https://`.
+
+Response format:
+
+```text
+🌐 HTTP check
+
+url:
+status:
+latency:
+server:
+content-type:
+```
+
+Lookup domain or IP ownership information:
+
+```text
+/whois <domain_or_ip>
+```
+
+Example:
+
+```text
+/whois google.com
+```
+
+Response format:
+
+```text
+🌐 Whois result
+
+parsed registration info
+```
 
 ## Approval
 

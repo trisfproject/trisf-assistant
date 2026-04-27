@@ -22,6 +22,12 @@ from app.features.chatid import chatid
 from app.features.groups import allowedgroups, allowgroup, removegroup
 from app.features.health import health, status
 from app.features.id import show_id
+from app.features.network import (
+    dns_command,
+    http_command,
+    ping_command,
+    whois_command,
+)
 from app.features.notes import delete, lookup, notes, save, update_note
 from app.features.oncall import oncall_handler
 from app.features.reminders import remind
@@ -85,6 +91,10 @@ def main():
     app.add_handler(CommandHandler("status", status))
     app.add_handler(CommandHandler("id", show_id))
     app.add_handler(CommandHandler("chatid", chatid))
+    app.add_handler(CommandHandler("ping", ping_command))
+    app.add_handler(CommandHandler("dns", dns_command))
+    app.add_handler(CommandHandler("http", http_command))
+    app.add_handler(CommandHandler("whois", whois_command))
 
     app.add_handler(
         MessageHandler(
