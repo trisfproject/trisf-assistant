@@ -107,7 +107,7 @@ async def afk(update, context):
         (chat, user, reason, datetime.datetime.now()),
     )
 
-    await update.message.reply_text(f"⌨️ AFK: {reason}")
+    await update.message.reply_text(f"🌙 AFK: {reason}")
 
 
 async def afk_watcher(update, context):
@@ -134,7 +134,7 @@ async def afk_watcher(update, context):
             (chat, user),
         )
         await update.message.reply_text(
-            "Welcome back"
+            "🌙 Welcome back"
         )
 
     mentioned = await get_mentioned_afk_users(update, context)
@@ -146,5 +146,5 @@ async def afk_watcher(update, context):
 
         reason, since = row
         await update.message.reply_text(
-            f"User is AFK: {reason} (since {format_since(since)})"
+            f"🌙 User is AFK: {reason} (since {format_since(since)})"
         )

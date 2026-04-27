@@ -32,7 +32,7 @@ async def allowgroup(update, context):
         (chat,),
     )
 
-    await update.message.reply_text("✅ Group allowed")
+    await update.message.reply_text("👥 Group allowed")
 
 
 async def removegroup(update, context):
@@ -49,7 +49,7 @@ async def removegroup(update, context):
         (chat,),
     )
 
-    await update.message.reply_text("🚫 Group removed")
+    await update.message.reply_text("👥 Group removed")
 
 
 async def allowedgroups(update, context):
@@ -71,10 +71,10 @@ async def allowedgroups(update, context):
     rows = cursor.fetchall()
 
     if not rows:
-        await update.message.reply_text("No allowed groups found")
+        await update.message.reply_text("👥 No allowed groups found")
         return
 
-    msg = "Allowed groups:\n\n"
+    msg = "👥 Allowed groups:\n\n"
     for row in rows:
         msg += f"{row[0]}\n"
 

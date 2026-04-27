@@ -20,11 +20,11 @@ async def health(update, context):
 
     msg = f"""🤖 trisf-assistant health check
 
-bot: OK
-database: {db_status}
-scheduler: OK
-mode: {BOT_MODE}
-uptime: {format_uptime()}
+🤖 bot: OK
+📊 database: {db_status}
+⏰ scheduler: OK
+ℹ️ mode: {BOT_MODE}
+🕔 uptime: {format_uptime()}
 """
 
     await update.message.reply_text(msg)
@@ -38,7 +38,7 @@ async def status(update, context):
 
     if not context.args:
         await update.message.reply_text(
-            "Usage:\n/status bot\n/status db\n/status scheduler"
+            "📘 Usage:\n/status bot\n/status db\n/status scheduler"
         )
         return
 
@@ -47,7 +47,7 @@ async def status(update, context):
     if target == "bot":
 
         await update.message.reply_text(
-            f"status: running\nuptime: {format_uptime()}"
+            f"📊 status: running\n📊 uptime: {format_uptime()}"
         )
 
     elif target == "db":
@@ -58,22 +58,22 @@ async def status(update, context):
             latency = datetime.datetime.now() - start
 
             await update.message.reply_text(
-                f"database OK ({int(latency.total_seconds()*1000)} ms)"
+                f"📊 database OK ({int(latency.total_seconds()*1000)} ms)"
             )
 
         except:
 
             await update.message.reply_text(
-                "database: ERROR"
+                "❌ database: ERROR"
             )
 
     elif target == "scheduler":
 
         await update.message.reply_text(
-            "scheduler running (interval 30s)"
+            "⏰ scheduler running (interval 30s)"
         )
 
     else:
         await update.message.reply_text(
-            "Usage:\n/status bot\n/status db\n/status scheduler"
+            "📘 Usage:\n/status bot\n/status db\n/status scheduler"
         )

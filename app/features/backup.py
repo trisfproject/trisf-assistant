@@ -238,7 +238,7 @@ async def import_handler(update, context):
         return
 
     IMPORT_WAITING.add((update.effective_chat.id, update.effective_user.id))
-    await update.message.reply_text("📥 Send a backup JSON file to restore")
+    await update.message.reply_text("📦 Send a backup JSON file to restore")
 
 
 async def import_document_handler(update, context):
@@ -282,7 +282,7 @@ async def import_document_handler(update, context):
         return
 
     tables = data["tables"]
-    await update.message.reply_text("Import started")
+    await update.message.reply_text("📦 Import started")
 
     try:
         cursor = conn.cursor()
@@ -304,7 +304,7 @@ async def import_document_handler(update, context):
     IMPORT_WAITING.discard(wait_key)
 
     progress = "\n".join(
-        f"{label} completed"
+        f"📦 {label} completed"
         for key, label in PROGRESS_LABELS
         if key in tables
     )

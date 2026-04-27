@@ -1,5 +1,5 @@
 from app.db import conn
-from app.messages import ACCESS_DENIED, NOTE_NOT_FOUND, WRITE_DENIED
+from app.messages import ACCESS_DENIED, NOTE_NOT_FOUND, WRITE_DENIED, with_emoji
 from app.permissions import is_writer
 from app.runtime import check_group, is_admin, log_action
 
@@ -27,13 +27,13 @@ async def save(update, context):
 
         if not content:
             await update.message.reply_text(
-                "Usage:\n/save key value\nor reply to a message then run:\n/save key"
+                "📘 Usage:\n/save key value\nor reply to a message then run:\n/save key"
             )
             return
 
     else:
         await update.message.reply_text(
-            "Usage:\n/save key value\nor reply to a message then run:\n/save key"
+            "📘 Usage:\n/save key value\nor reply to a message then run:\n/save key"
         )
         return
 
@@ -50,13 +50,13 @@ async def save(update, context):
 
     if cursor.rowcount == 0:
         await update.message.reply_text(
-            "⚠️ Already exists"
+            "⚠️ Note already exists"
         )
         return
 
     log_action(chat, user, "save", key)
 
-    await update.message.reply_text(f"Saved note: {key}")
+    await update.message.reply_text(f"✅ Saved note: {key}")
 
 
 async def update_note(update, context):
@@ -68,7 +68,7 @@ async def update_note(update, context):
     chat = update.effective_chat.id
 
     if len(context.args) < 2:
-        await update.message.reply_text("Usage:\n/update key value")
+        await update.message.reply_text("📘 Usage:\n/update key value")
         return
 
     key = context.args[0]
@@ -99,7 +99,7 @@ async def delete(update, context):
     chat = update.effective_chat.id
 
     if not context.args:
-        await update.message.reply_text("Usage:\n/delete key")
+        await update.message.reply_text("📘 Usage:\n/delete key")
         return
 
     key = context.args[0]
@@ -120,7 +120,7 @@ async def delete(update, context):
         await update.message.reply_text(NOTE_NOT_FOUND)
         return
 
-    await update.message.reply_text(f"Deleted note: {key}")
+    await update.message.reply_text(f"✅ Deleted note: {key}")
 
 
 async def notes(update, context):
@@ -145,10 +145,10 @@ async def notes(update, context):
     rows = cursor.fetchall()
 
     if not rows:
-        await update.message.reply_text("No notes found")
+        await update.message.reply_text("📝 No notes found")
         return
 
-    msg = "Available notes:\n\n"
+    msg = "📝 Available notes:\n\n"
 
     for r in rows:
         msg += r[0] + "\n"
@@ -179,7 +179,7 @@ async def lookup(update, context):
     row = cursor.fetchone()
 
     if row:
-        await update.message.reply_text(row[0])
+        await update.message.reply_text(with_emoji("📝", row[0]))
         return
 
     await update.message.reply_text(NOTE_NOT_FOUND)

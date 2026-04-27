@@ -56,7 +56,7 @@ async def oncall_status(update, context):
     row = cursor.fetchone()
 
     if not row:
-        await update.message.reply_text("No active on-call user")
+        await update.message.reply_text("🚨 No active on-call user")
         return
 
     user_id, username = row
@@ -65,7 +65,7 @@ async def oncall_status(update, context):
     if user and not user.startswith("@"):
         user = f"@{user}"
 
-    await update.message.reply_text(f"On-call now: {user}")
+    await update.message.reply_text(f"🚨 On-call now: {user}")
 
 
 async def oncall_set(update, context):
@@ -75,7 +75,7 @@ async def oncall_set(update, context):
 
     if len(context.args) < 2:
         await update.message.reply_text(
-            "Usage:\n/oncall\n/oncall set @username\n/oncall clear"
+            "📘 Usage:\n/oncall\n/oncall set @username\n/oncall clear"
         )
         return
 
@@ -102,7 +102,7 @@ async def oncall_set(update, context):
         (chat, user_id, username),
     )
 
-    await update.message.reply_text(f"On-call updated: @{username}")
+    await update.message.reply_text(f"🚨 On-call updated: @{username}")
 
 
 async def oncall_clear(update, context):
@@ -119,7 +119,7 @@ async def oncall_clear(update, context):
         (chat,),
     )
 
-    await update.message.reply_text("On-call cleared")
+    await update.message.reply_text("🚨 On-call cleared")
 
 
 async def oncall_handler(update, context):
@@ -138,5 +138,5 @@ async def oncall_handler(update, context):
         return
 
     await update.message.reply_text(
-        "Usage:\n/oncall\n/oncall set @username\n/oncall clear"
+        "📘 Usage:\n/oncall\n/oncall set @username\n/oncall clear"
     )

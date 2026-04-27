@@ -23,13 +23,13 @@ async def approve(update, context):
 
         if not context.args:
             await update.message.reply_text(
-                "Usage:\n/approve user_id\nor reply to a message then run:\n/approve"
+                "📘 Usage:\n/approve user_id\nor reply to a message then run:\n/approve"
             )
             return
 
         if not context.args[0].isdigit():
             await update.message.reply_text(
-                "Usage:\n/approve user_id\nor reply to a message then run:\n/approve"
+                "📘 Usage:\n/approve user_id\nor reply to a message then run:\n/approve"
             )
             return
 
@@ -51,7 +51,7 @@ async def approve(update, context):
     log_action(chat, update.effective_user.id, "approve", uid)
 
     label = f"@{username}" if username else str(uid)
-    await update.message.reply_text(f"User approved: {label}")
+    await update.message.reply_text(f"👤 User approved: {label}")
 
 
 async def revoke(update, context):
@@ -79,7 +79,7 @@ async def revoke(update, context):
 
     if uid is None and username is None:
         await update.message.reply_text(
-            "Usage:\n/revoke @username\nor reply to a message then run:\n/revoke"
+            "📘 Usage:\n/revoke @username\nor reply to a message then run:\n/revoke"
         )
         return
 
@@ -123,7 +123,7 @@ async def revoke(update, context):
     log_action(chat, update.effective_user.id, "revoke", uid)
 
     label = f"@{stored_username}" if stored_username else str(uid)
-    await update.message.reply_text(f"User revoked: {label}")
+    await update.message.reply_text(f"👤 User revoked: {label}")
 
 
 async def approvelist(update, context):
@@ -149,11 +149,11 @@ async def approvelist(update, context):
 
     if not rows:
         await update.message.reply_text(
-            "No approved users found"
+            "👤 No approved users found"
         )
         return
 
-    msg = "Approved users:\n\n"
+    msg = "👤 Approved users:\n\n"
 
     for username, fullname, uid in rows:
 

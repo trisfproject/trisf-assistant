@@ -37,10 +37,10 @@ async def audit(update, context):
     rows = cursor.fetchall()
 
     if not rows:
-        await update.message.reply_text("No audit entries found")
+        await update.message.reply_text("📊 No audit entries found")
         return
 
-    msg = "Audit log:\n\n"
+    msg = "📊 Audit log:\n\n"
     for action, target, user_id, created_at in rows:
         label = f" {target}" if target else ""
         msg += f"{created_at} - {action}{label} by {user_id}\n"
