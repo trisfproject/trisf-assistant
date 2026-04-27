@@ -64,7 +64,7 @@ CREATE TABLE runbooks (
  UNIQUE(chat_id,name)
 );
 
-CREATE TABLE oncall_status (
+CREATE TABLE IF NOT EXISTS oncall_status (
  chat_id BIGINT PRIMARY KEY,
  user_id BIGINT,
  username TEXT,

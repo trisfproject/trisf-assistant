@@ -75,7 +75,7 @@ def main():
     app.add_handler(CommandHandler("remind", remind))
     app.add_handler(CommandHandler("audit", audit))
     app.add_handler(CommandHandler("afk", afk))
-    app.add_handler(CommandHandler("oncall", oncall_handler))
+    app.add_handler(CommandHandler("oncall", oncall_handler), group=-1)
     app.add_handler(CommandHandler("export", export_handler))
     app.add_handler(CommandHandler("import", import_handler))
 

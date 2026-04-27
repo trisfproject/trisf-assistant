@@ -60,12 +60,12 @@ async def oncall_status(update, context):
         return
 
     user_id, username = row
-    user = username or str(user_id)
+    user = username.strip() if username else str(user_id)
 
-    if username and not username.startswith("@"):
-        user = f"@{username}"
+    if user and not user.startswith("@"):
+        user = f"@{user}"
 
-    await update.message.reply_text(f"On-call sekarang:\n\n{user}")
+    await update.message.reply_text(f"On-call sekarang: {user}")
 
 
 async def oncall_set(update, context):
@@ -80,13 +80,16 @@ async def oncall_set(update, context):
     ensure_oncall_schema()
 
     chat = update.effective_chat.id
-    username = context.args[1]
+    username = context.args[1].strip()
     user_id = None
 
     if update.message.reply_to_message:
         user = update.message.reply_to_message.from_user
         user_id = user.id
         username = user.username or username
+
+    if username.startswith("@"):
+        username = username[1:]
 
     cursor = conn.cursor()
     cursor.execute(
@@ -97,10 +100,7 @@ async def oncall_set(update, context):
         (chat, user_id, username),
     )
 
-    if username and not username.startswith("@"):
-        username = f"@{username}"
-
-    await update.message.reply_text(f"On-call sekarang:\n\n{username}")
+    await update.message.reply_text(f"On-call updated: @{username}")
 
 
 async def oncall_clear(update, context):
@@ -117,7 +117,7 @@ async def oncall_clear(update, context):
         (chat,),
     )
 
-    await update.message.reply_text("Tidak ada on-call aktif")
+    await update.message.reply_text("On-call cleared")
 
 
 async def oncall_handler(update, context):
