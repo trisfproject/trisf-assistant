@@ -48,11 +48,19 @@ def is_group_allowed(chat):
     return cursor.fetchone() is not None
 
 
-async def check_group(update):
-    if is_superuser(update.effective_user.id):
-        return True
+def is_restricted_mode_blocked(chat, user):
+    return (
+        BOT_MODE == "restricted"
+        and not is_superuser(user)
+        and not is_group_allowed(chat)
+    )
 
-    if not is_group_allowed(update.effective_chat.id):
+
+async def check_group(update):
+    if is_restricted_mode_blocked(
+        update.effective_chat.id,
+        update.effective_user.id,
+    ):
         await update.message.reply_text(
             GROUP_NOT_ALLOWED(OWNER_CONTACT)
         )
@@ -65,7 +73,10 @@ async def is_admin(update, context):
     if is_superuser(update.effective_user.id):
         return True
 
-    if not is_group_allowed(update.effective_chat.id):
+    if is_restricted_mode_blocked(
+        update.effective_chat.id,
+        update.effective_user.id,
+    ):
         await update.message.reply_text(
             GROUP_NOT_ALLOWED(OWNER_CONTACT)
         )
