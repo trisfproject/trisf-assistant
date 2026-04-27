@@ -5,6 +5,7 @@ import sys
 from dotenv import load_dotenv
 from telegram.ext import (
     ApplicationBuilder,
+    CallbackQueryHandler,
     CommandHandler,
     MessageHandler,
     filters,
@@ -21,6 +22,7 @@ from app.features.backup import (
 from app.features.chatid import chatid
 from app.features.groups import allowedgroups, allowgroup, removegroup
 from app.features.health import health, status
+from app.features.help import help_button_handler, help_command
 from app.features.id import show_id
 from app.features.network import (
     dns_command,
@@ -89,6 +91,7 @@ def main():
     app.add_handler(CommandHandler("import", import_handler))
 
     app.add_handler(CommandHandler("health", health))
+    app.add_handler(CommandHandler("help", help_command))
     app.add_handler(CommandHandler("status", status))
     app.add_handler(CommandHandler("id", show_id))
     app.add_handler(CommandHandler("chatid", chatid))
@@ -98,6 +101,7 @@ def main():
     app.add_handler(CommandHandler("whois", whois_command))
     app.add_handler(CommandHandler("pin", pin_command))
     app.add_handler(CommandHandler("unpin", unpin_command))
+    app.add_handler(CallbackQueryHandler(help_button_handler, pattern="^help_"))
 
     app.add_handler(
         MessageHandler(
