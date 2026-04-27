@@ -20,6 +20,7 @@ from app.features.backup import (
 )
 from app.features.groups import allowedgroups, allowgroup, removegroup
 from app.features.health import health, status
+from app.features.id import show_id
 from app.features.notes import delete, lookup, notes, save, update_note
 from app.features.oncall import oncall_handler
 from app.features.reminders import remind
@@ -81,6 +82,7 @@ def main():
 
     app.add_handler(CommandHandler("health", health))
     app.add_handler(CommandHandler("status", status))
+    app.add_handler(CommandHandler("id", show_id))
 
     app.add_handler(
         MessageHandler(
