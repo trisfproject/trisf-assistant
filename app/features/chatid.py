@@ -17,8 +17,14 @@ async def chatid(update, context):
             f"thread_id: `{thread_id}`\n"
             f"type: {escape_markdown(chat.type)}"
         )
+    elif chat.type == "private":
+        text = (
+            "👤 Chat info\n\n"
+            f"chat_id: `{chat.id}`\n"
+            f"type: {escape_markdown(chat.type)}"
+        )
     else:
-        title = chat.title or "-"
+        title = chat.title or "none"
         text = (
             "👥 Chat info\n\n"
             f"chat_id: `{chat.id}`\n"

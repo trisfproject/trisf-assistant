@@ -23,7 +23,7 @@ def escape_markdown(value):
 
 def format_user_info(target_user):
     username = target_user.username
-    username_text = escape_markdown(f"@{username}") if username else "-"
+    username_text = escape_markdown(f"@{username}") if username else "none"
     name = getattr(target_user, "full_name", None) or getattr(target_user, "title", None) or "-"
     is_bot = str(getattr(target_user, "is_bot", False)).lower()
 
