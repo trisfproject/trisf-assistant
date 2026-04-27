@@ -8,16 +8,18 @@ services:
     container_name: trisf-assistant
     restart: always
     env_file:
-      - .env
+      - ./.env
     depends_on:
       - db
+    volumes:
+      - /mnt/nfs/docker/trisf-assistant/logs:/app/logs
 
   db:
     image: mysql:8
     container_name: trisf-assistant-db
     restart: always
     env_file:
-      - .env
+      - ./.env
     environment:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
@@ -25,4 +27,4 @@ services:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     volumes:
       - /mnt/nfs/docker/trisf-assistant/mysql:/var/lib/mysql
-      - ./docker/mysql/init:/docker-entrypoint-initdb.d
+      - ./sql/schema.sql:/docker-entrypoint-initdb.d/schema.sql

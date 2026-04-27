@@ -1,4 +1,6 @@
 import os
+import logging
+import sys
 
 from dotenv import load_dotenv
 from telegram.ext import (
@@ -16,6 +18,22 @@ from app.scheduler import reminder_worker
 load_dotenv()
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
+LOG_FILE = "/app/logs/bot.log"
+logger = logging.getLogger(__name__)
+
+
+def configure_logging():
+    os.makedirs(os.path.dirname(LOG_FILE), exist_ok=True)
+
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
+        handlers=[
+            logging.FileHandler(LOG_FILE, encoding="utf-8"),
+            logging.StreamHandler(sys.stdout),
+        ],
+        force=True,
+    )
 
 
 # =========================================================
@@ -23,6 +41,7 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 # =========================================================
 
 def main():
+    configure_logging()
 
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
@@ -45,6 +64,6 @@ def main():
 
     app.post_init = post_init
 
-    print("trisf-assistant bot running")
+    logger.info("trisf-assistant bot running")
 
     app.run_polling()
