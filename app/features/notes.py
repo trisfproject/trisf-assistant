@@ -1,7 +1,24 @@
+import html
+
 from app.db import conn
-from app.messages import ACCESS_DENIED, NOTE_NOT_FOUND, WRITE_DENIED, with_emoji
+from app.messages import ACCESS_DENIED, EMOJI_PREFIXES, NOTE_NOT_FOUND, WRITE_DENIED
 from app.permissions import is_writer
 from app.runtime import check_group, is_admin, log_action
+
+
+def command_content(update, fallback_args):
+    text = update.message.text or update.message.caption or ""
+    parts = text.split(maxsplit=2)
+
+    if len(parts) >= 3:
+        return parts[2]
+
+    return " ".join(fallback_args)
+
+
+def format_note_content(note_text):
+    prefix = "" if note_text.lstrip().startswith(EMOJI_PREFIXES) else "📝 "
+    return f"{prefix}<pre>{html.escape(note_text)}</pre>"
 
 
 async def save(update, context):
@@ -18,7 +35,7 @@ async def save(update, context):
 
     if len(context.args) >= 2:
         key = context.args[0]
-        content = " ".join(context.args[1:])
+        content = command_content(update, context.args[1:])
 
     elif len(context.args) == 1 and update.message.reply_to_message:
         key = context.args[0]
@@ -72,7 +89,7 @@ async def update_note(update, context):
         return
 
     key = context.args[0]
-    content = " ".join(context.args[1:])
+    content = command_content(update, context.args[1:])
 
     cursor = conn.cursor()
 
@@ -179,7 +196,10 @@ async def lookup(update, context):
     row = cursor.fetchone()
 
     if row:
-        await update.message.reply_text(with_emoji("📝", row[0]))
+        await update.message.reply_text(
+            format_note_content(row[0]),
+            parse_mode="HTML",
+        )
         return
 
     await update.message.reply_text(NOTE_NOT_FOUND)
