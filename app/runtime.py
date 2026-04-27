@@ -65,6 +65,12 @@ async def is_admin(update, context):
     if is_superuser(update.effective_user.id):
         return True
 
+    if not is_group_allowed(update.effective_chat.id):
+        await update.message.reply_text(
+            GROUP_NOT_ALLOWED(OWNER_CONTACT)
+        )
+        return False
+
     admins = await context.bot.get_chat_administrators(
         update.effective_chat.id
     )
