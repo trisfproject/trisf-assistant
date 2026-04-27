@@ -16,11 +16,29 @@ def format_user_info(target_user):
     )
 
 
+def mentioned_user(message):
+    text = message.text or message.caption or ""
+    entities = message.entities or message.caption_entities or []
+
+    for entity in entities:
+        if entity.type == "text_mention" and entity.user:
+            return entity.user
+
+        if entity.type == "mention":
+            username = text[entity.offset:entity.offset + entity.length].lstrip("@")
+            if username:
+                continue
+
+    return None
+
+
 async def show_id(update, context):
     target_user = update.effective_user
 
     if update.message.reply_to_message:
         target_user = update.message.reply_to_message.from_user
+    else:
+        target_user = mentioned_user(update.message) or target_user
 
     await update.message.reply_text(
         format_user_info(target_user),
