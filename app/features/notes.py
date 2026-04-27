@@ -12,15 +12,30 @@ async def save(update, context):
     chat = update.effective_chat.id
     user = update.effective_user.id
 
-    if not is_writer(chat, user):
+    if not is_writer(chat, user) and not await is_admin(update, context):
         await update.message.reply_text(WRITE_DENIED)
         return
 
-    if len(context.args) < 2:
-        return
+    if len(context.args) >= 2:
+        key = context.args[0]
+        content = " ".join(context.args[1:])
 
-    key = context.args[0]
-    content = " ".join(context.args[1:])
+    elif len(context.args) == 1 and update.message.reply_to_message:
+        key = context.args[0]
+        reply = update.message.reply_to_message
+        content = reply.text or reply.caption
+
+        if not content:
+            await update.message.reply_text(
+                "Usage:\n/save key value\nor reply message + /save key"
+            )
+            return
+
+    else:
+        await update.message.reply_text(
+            "Usage:\n/save key value\nor reply message + /save key"
+        )
+        return
 
     cursor = conn.cursor()
 
@@ -41,7 +56,7 @@ async def save(update, context):
 
     log_action(chat, user, "save", key)
 
-    await update.message.reply_text("✅ saved")
+    await update.message.reply_text(f"Saved note: {key}")
 
 
 async def update_note(update, context):
