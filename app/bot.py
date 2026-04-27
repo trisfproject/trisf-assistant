@@ -18,6 +18,7 @@ from app.features.backup import (
     import_document_handler,
     import_handler,
 )
+from app.features.chatid import chatid
 from app.features.groups import allowedgroups, allowgroup, removegroup
 from app.features.health import health, status
 from app.features.id import show_id
@@ -83,6 +84,7 @@ def main():
     app.add_handler(CommandHandler("health", health))
     app.add_handler(CommandHandler("status", status))
     app.add_handler(CommandHandler("id", show_id))
+    app.add_handler(CommandHandler("chatid", chatid))
 
     app.add_handler(
         MessageHandler(
