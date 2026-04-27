@@ -36,6 +36,8 @@ Current registered command handlers:
 /dns
 /http
 /whois
+/pin
+/unpin
 ```
 
 Messages that start with `#` are handled as note lookups. For example, `#deploy` looks for a saved note with key `deploy`.
@@ -406,6 +408,77 @@ Response format:
 🌐 Whois result
 
 parsed registration info
+```
+
+## Message Pinning Commands
+
+Pin or unpin important messages in group chats by replying.
+
+These commands require the bot to be group admin with pin permission enabled.
+
+### /pin
+
+Pin a message in the chat.
+
+Usage:
+
+Reply to a message:
+
+```text
+/pin
+```
+
+Example:
+
+```text
+(reply to deployment notice)
+/pin
+```
+
+Response:
+
+```text
+📌 Message pinned
+```
+
+Permissions:
+
+```text
+Approved users
+Superusers
+```
+
+### /unpin
+
+Unpin a pinned message in the chat.
+
+Usage:
+
+Reply to a pinned message:
+
+```text
+/unpin
+```
+
+Response:
+
+```text
+📌 Message unpinned
+```
+
+Permissions:
+
+```text
+Approved users
+Superusers
+```
+
+If the bot is not admin in the group:
+
+Response:
+
+```text
+⚠️ I need admin permission to pin messages in this chat.
 ```
 
 ## Approval
