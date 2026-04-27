@@ -50,7 +50,7 @@ CREATE TABLE todos (
  chat_id BIGINT,
  task TEXT,
  created_by BIGINT,
- is_done BOOLEAN DEFAULT FALSE,
+ completed BOOLEAN DEFAULT FALSE,
  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
