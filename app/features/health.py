@@ -38,7 +38,7 @@ async def status(update, context):
 
     if not context.args:
         await update.message.reply_text(
-            "usage: /status bot|db|scheduler"
+            "Usage:\n/status bot\n/status db\n/status scheduler"
         )
         return
 
@@ -64,11 +64,16 @@ async def status(update, context):
         except:
 
             await update.message.reply_text(
-                "database ERROR"
+                "database: ERROR"
             )
 
     elif target == "scheduler":
 
         await update.message.reply_text(
             "scheduler running (interval 30s)"
+        )
+
+    else:
+        await update.message.reply_text(
+            "Usage:\n/status bot\n/status db\n/status scheduler"
         )

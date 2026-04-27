@@ -37,7 +37,7 @@ async def audit(update, context):
     rows = cursor.fetchall()
 
     if not rows:
-        await update.message.reply_text("No audit entries.")
+        await update.message.reply_text("No audit entries found")
         return
 
     msg = "Audit log:\n\n"

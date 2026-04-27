@@ -1,5 +1,5 @@
 from app.db import conn
-from app.messages import ACCESS_DENIED, WRITE_DENIED
+from app.messages import ACCESS_DENIED, NOTE_NOT_FOUND, WRITE_DENIED
 from app.permissions import is_writer
 from app.runtime import check_group, is_admin, log_action
 
@@ -27,13 +27,13 @@ async def save(update, context):
 
         if not content:
             await update.message.reply_text(
-                "Usage:\n/save key value\nor reply message + /save key"
+                "Usage:\n/save key value\nor reply to a message then run:\n/save key"
             )
             return
 
     else:
         await update.message.reply_text(
-            "Usage:\n/save key value\nor reply message + /save key"
+            "Usage:\n/save key value\nor reply to a message then run:\n/save key"
         )
         return
 
@@ -50,7 +50,7 @@ async def save(update, context):
 
     if cursor.rowcount == 0:
         await update.message.reply_text(
-            "⚠️ key sudah ada gunakan /update"
+            "⚠️ Already exists"
         )
         return
 
@@ -67,7 +67,8 @@ async def update_note(update, context):
 
     chat = update.effective_chat.id
 
-    if not context.args:
+    if len(context.args) < 2:
+        await update.message.reply_text("Usage:\n/update key value")
         return
 
     key = context.args[0]
@@ -86,7 +87,7 @@ async def update_note(update, context):
 
     log_action(chat, update.effective_user.id, "update", key)
 
-    await update.message.reply_text("✅ updated")
+    await update.message.reply_text(f"✅ Updated note: {key}")
 
 
 async def delete(update, context):
@@ -98,6 +99,7 @@ async def delete(update, context):
     chat = update.effective_chat.id
 
     if not context.args:
+        await update.message.reply_text("Usage:\n/delete key")
         return
 
     key = context.args[0]
@@ -114,7 +116,11 @@ async def delete(update, context):
 
     log_action(chat, update.effective_user.id, "delete", key)
 
-    await update.message.reply_text("🗑 deleted")
+    if cursor.rowcount == 0:
+        await update.message.reply_text(NOTE_NOT_FOUND)
+        return
+
+    await update.message.reply_text(f"Deleted note: {key}")
 
 
 async def notes(update, context):
@@ -139,7 +145,7 @@ async def notes(update, context):
     rows = cursor.fetchall()
 
     if not rows:
-        await update.message.reply_text("belum ada notes")
+        await update.message.reply_text("No notes found")
         return
 
     msg = "Available notes:\n\n"
@@ -174,3 +180,6 @@ async def lookup(update, context):
 
     if row:
         await update.message.reply_text(row[0])
+        return
+
+    await update.message.reply_text(NOTE_NOT_FOUND)

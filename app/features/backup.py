@@ -209,7 +209,7 @@ async def export_handler(update, context):
 
     all_groups = bool(context.args and context.args[0].lower() == "all")
 
-    await update.message.reply_text("📦 Export dimulai…")
+    await update.message.reply_text("📦 Export started")
 
     chat = update.effective_chat.id
     data = build_backup(chat, all_groups=all_groups)
@@ -226,7 +226,7 @@ async def export_handler(update, context):
         )
 
     os.remove(path)
-    await update.message.reply_text("✅ Export selesai")
+    await update.message.reply_text("✅ Export completed")
 
 
 async def import_handler(update, context):
@@ -238,7 +238,7 @@ async def import_handler(update, context):
         return
 
     IMPORT_WAITING.add((update.effective_chat.id, update.effective_user.id))
-    await update.message.reply_text("📥 Kirim file backup JSON untuk restore")
+    await update.message.reply_text("📥 Send a backup JSON file to restore")
 
 
 async def import_document_handler(update, context):
@@ -264,7 +264,7 @@ async def import_document_handler(update, context):
     document = update.message.document
     if not document.file_name or not document.file_name.endswith(".json"):
         IMPORT_WAITING.discard(wait_key)
-        await update.message.reply_text("❌ Format backup tidak valid")
+        await update.message.reply_text("❌ Invalid backup format")
         return
 
     try:
@@ -273,15 +273,16 @@ async def import_document_handler(update, context):
         data = json.loads(payload.decode("utf-8"))
     except Exception:
         IMPORT_WAITING.discard(wait_key)
-        await update.message.reply_text("❌ Format backup tidak valid")
+        await update.message.reply_text("❌ Invalid backup format")
         return
 
     if not validate_backup(data):
         IMPORT_WAITING.discard(wait_key)
-        await update.message.reply_text("❌ Format backup tidak valid")
+        await update.message.reply_text("❌ Invalid backup format")
         return
 
     tables = data["tables"]
+    await update.message.reply_text("Import started")
 
     try:
         cursor = conn.cursor()
@@ -297,15 +298,15 @@ async def import_document_handler(update, context):
     except Exception:
         conn.cursor().execute("ROLLBACK")
         IMPORT_WAITING.discard(wait_key)
-        await update.message.reply_text("❌ Format backup tidak valid")
+        await update.message.reply_text("❌ Invalid backup format")
         return
 
     IMPORT_WAITING.discard(wait_key)
 
     progress = "\n".join(
-        f"{label} ✔"
+        f"{label} completed"
         for key, label in PROGRESS_LABELS
         if key in tables
     )
     await update.message.reply_text(progress)
-    await update.message.reply_text("✅ Import selesai")
+    await update.message.reply_text("✅ Import completed")

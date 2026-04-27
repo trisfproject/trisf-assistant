@@ -56,7 +56,7 @@ async def oncall_status(update, context):
     row = cursor.fetchone()
 
     if not row:
-        await update.message.reply_text("Tidak ada on-call aktif")
+        await update.message.reply_text("No active on-call user")
         return
 
     user_id, username = row
@@ -65,7 +65,7 @@ async def oncall_status(update, context):
     if user and not user.startswith("@"):
         user = f"@{user}"
 
-    await update.message.reply_text(f"On-call sekarang: {user}")
+    await update.message.reply_text(f"On-call now: {user}")
 
 
 async def oncall_set(update, context):
@@ -74,7 +74,9 @@ async def oncall_set(update, context):
         return
 
     if len(context.args) < 2:
-        await update.message.reply_text("usage: /oncall set @username")
+        await update.message.reply_text(
+            "Usage:\n/oncall\n/oncall set @username\n/oncall clear"
+        )
         return
 
     ensure_oncall_schema()
@@ -135,4 +137,6 @@ async def oncall_handler(update, context):
         await oncall_clear(update, context)
         return
 
-    await update.message.reply_text("usage: /oncall status|set @username|clear")
+    await update.message.reply_text(
+        "Usage:\n/oncall\n/oncall set @username\n/oncall clear"
+    )

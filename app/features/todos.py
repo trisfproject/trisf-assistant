@@ -64,12 +64,12 @@ async def list_todos(update, chat):
     rows = cursor.fetchall()
 
     if not rows:
-        await update.message.reply_text("No todos.")
+        await update.message.reply_text("No todos found")
         return
 
     msg = "Todos:\n\n"
     for task, completed in rows:
-        prefix = "✔" if completed else "•"
+        prefix = "Completed" if completed else "Pending"
         msg += f"{prefix} {task}\n"
 
     await update.message.reply_text(msg)
@@ -77,7 +77,9 @@ async def list_todos(update, chat):
 
 async def add_todo(update, chat, user, task):
     if not task:
-        await update.message.reply_text("usage: /todo add item")
+        await update.message.reply_text(
+            "Usage:\n/todo add text\n/todo done number\n/todo delete number"
+        )
         return
 
     if not is_writer(chat, user):
@@ -95,7 +97,7 @@ async def add_todo(update, chat, user, task):
         (chat, task, user),
     )
 
-    await update.message.reply_text("✅ todo added")
+    await update.message.reply_text("✅ Todo added")
 
 
 async def complete_todo(update, chat, user, todo_id):
@@ -116,10 +118,10 @@ async def complete_todo(update, chat, user, todo_id):
     )
 
     if cursor.rowcount == 0:
-        await update.message.reply_text("Todo not found.")
+        await update.message.reply_text("⚠️ Todo not found")
         return
 
-    await update.message.reply_text("✅ todo completed")
+    await update.message.reply_text("Todo completed")
 
 
 async def delete_todo(update, chat, user, todo_id):
@@ -139,10 +141,10 @@ async def delete_todo(update, chat, user, todo_id):
     )
 
     if cursor.rowcount == 0:
-        await update.message.reply_text("Todo not found.")
+        await update.message.reply_text("⚠️ Todo not found")
         return
 
-    await update.message.reply_text("🗑 todo deleted")
+    await update.message.reply_text("Todo removed")
 
 
 async def todo(update, context):
@@ -168,7 +170,9 @@ async def todo(update, context):
 
     if command in ("done", "complete"):
         if len(context.args) < 2 or not context.args[1].isdigit():
-            await update.message.reply_text("usage: /todo done 1")
+            await update.message.reply_text(
+                "Usage:\n/todo add text\n/todo done number\n/todo delete number"
+            )
             return
 
         await complete_todo(update, chat, user, int(context.args[1]))
@@ -176,7 +180,9 @@ async def todo(update, context):
 
     if command == "delete":
         if len(context.args) < 2 or not context.args[1].isdigit():
-            await update.message.reply_text("usage: /todo delete 1")
+            await update.message.reply_text(
+                "Usage:\n/todo add text\n/todo done number\n/todo delete number"
+            )
             return
 
         await delete_todo(update, chat, user, int(context.args[1]))

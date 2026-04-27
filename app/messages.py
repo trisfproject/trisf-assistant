@@ -1,14 +1,11 @@
-ACCESS_DENIED="❌ Anda tidak memiliki hak akses untuk menjalankan perintah ini."
+ACCESS_DENIED="❌ You are not allowed to run this command"
 
-WRITE_DENIED="❌ Anda belum memiliki izin untuk menyimpan notes di grup ini."
+WRITE_DENIED="❌ You are not allowed to run this command"
 
-NOTE_NOT_FOUND="⚠️ Notes tidak ditemukan. Gunakan /notes."
+NOTE_NOT_FOUND="⚠️ Note not found"
 
 def GROUP_NOT_ALLOWED(owner):
 
- return f"""🤖 trisf-assistant
-
-Bot ini digunakan untuk internal tim.
-
-Silakan hubungi {owner} untuk akses penggunaan.
+ return f"""⚠️ This command is not allowed in this group
+Contact admin: {owner}
 """

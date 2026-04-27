@@ -36,12 +36,12 @@ async def remind(update, context):
     user = update.effective_user.id
 
     if len(context.args) < 2:
-        await update.message.reply_text("usage: /remind 10m message")
+        await update.message.reply_text("Usage:\n/remind 10m message")
         return
 
     delay = parse_delay(context.args[0])
     if delay is None:
-        await update.message.reply_text("usage: /remind 10m message")
+        await update.message.reply_text("Usage:\n/remind 10m message")
         return
 
     if not is_writer(chat, user):
@@ -60,4 +60,4 @@ async def remind(update, context):
         (chat, user, message, remind_at),
     )
 
-    await update.message.reply_text("✅ reminder set")
+    await update.message.reply_text("✅ Reminder set")
