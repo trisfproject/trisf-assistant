@@ -107,7 +107,7 @@ async def afk(update, context):
         (chat, user, reason, datetime.datetime.now()),
     )
 
-    await update.message.reply_text(f"AFK set: {reason}")
+    await update.message.reply_text(f"⌨️ AFK: {reason}")
 
 
 async def afk_watcher(update, context):
