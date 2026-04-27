@@ -1,687 +1,389 @@
 # trisf-assistant Documentation
 
-Dokumentasi lengkap penggunaan dan deployment **trisf-assistant** sebagai Telegram group assistant bot untuk internal tim.
+trisf-assistant is a Telegram group assistant bot for internal teams. It stores operational notes, todos, reminders, approvals, on-call status, AFK status, audit entries, and backups in MySQL.
 
----
+All group data is scoped by `chat_id`, so one group cannot read another group's notes, todos, reminders, approvals, or on-call status through normal commands.
 
-# Overview
+## Implemented Commands
 
-trisf-assistant membantu tim operasional menyimpan shortcut knowledge, reminder, runbook SOP, todo tracker, dan koordinasi aktivitas langsung dari Telegram group.
+Current registered command handlers:
 
-Dirancang untuk:
-
-* Support operations
-* Technical community internal
-
-Semua data disimpan berdasarkan:
-
-```
-chat_id namespace isolation
-```
-
-Sehingga data antar group tidak saling bercampur.
-
----
-
-# Command Quick Reference
-
-Command utama yang paling sering digunakan:
-
-```
-/save key value
+```text
+/save
+/update
+/delete
 /notes
-/runbook
+/approve
+/revoke
+/approvelist
+/allowgroup
+/removegroup
+/allowedgroups
+/allowlist
+/groups
 /todo
 /remind
+/audit
+/afk
+/oncall
+/export
+/import
 /health
 /status
-/audit
-/approve
 ```
 
----
+Unknown commands are handled as note lookups. For example, `/deploy` looks for a saved note with key `deploy`.
 
-# Architecture
+## Deployment
 
-Flow sederhana:
+Copy the environment template and start Docker Compose:
 
-```
-Telegram Group
-    ↓
-trisf-assistant bot
-    ↓
-Permission Engine
-    ↓
-Command Router
-    ↓
-MySQL Database
-```
-
----
-
-# Project Structure
-
-```
-trisf-assistant/
-├── app/
-├── config/
-├── docker/
-├── sql/
-├── docs/
-├── run.py
-├── docker-compose.yml
-└── requirements.txt
-```
-
----
-
-# Requirements
-
-Minimal environment:
-
-* Docker
-* Docker Compose
-* MySQL / MariaDB
-* Telegram bot token (@BotFather)
-
----
-
-# Create Telegram Bot
-
-Open Telegram:
-
-```
-@BotFather
-```
-
-Create bot:
-
-```
-/newbot
-```
-
-Disable privacy mode:
-
-```
-/setprivacy
-Disable
-```
-
-Required agar bot membaca command di group.
-
----
-
-# Database Setup
-
-Login MySQL:
-
-```
-mysql -u root -p
-```
-
-Create database:
-
-```
-CREATE DATABASE trisf_assistant;
-```
-
-Import schema:
-
-```
-mysql trisf_assistant < sql/schema.sql
-```
-
----
-
-# Configuration
-
-Copy config template:
-
-```
-cp config/.env.example .env
-```
-
-Edit:
-
-```
+```bash
+cp .env.sample .env
 nano .env
+docker compose up -d
 ```
 
-Example:
+The production layout is expected to be:
 
+```text
+/mnt/nfs/docker/trisf-assistant/
+├── apps
+├── mysql
+└── logs
 ```
+
+`docker-compose.yml` reads `.env` from the repo root, mounts MySQL data at `/mnt/nfs/docker/trisf-assistant/mysql`, and persists bot logs at `/mnt/nfs/docker/trisf-assistant/logs`.
+
+## Configuration
+
+Example `.env`:
+
+```env
 BOT_TOKEN=
 
-DB_HOST=
+DB_HOST=db
 DB_USER=
 DB_PASS=
-DB_NAME=
+DB_NAME=trisf_assistant
+
+MYSQL_DATABASE=trisf_assistant
+MYSQL_USER=
+MYSQL_PASSWORD=
+MYSQL_ROOT_PASSWORD=
 
 SUPERUSER_IDS=12345678
 
 BOT_MODE=restricted
-
-OWNER_CONTACT=@username
+OWNER_CONTACT=@trisf
 ```
 
----
+`DB_HOST=db` is required for the bot container to connect to the MySQL service in Docker Compose.
 
-# Run Bot
+## Access Control Model
 
-Start container:
+`SUPERUSER_IDS` is a comma-separated list of Telegram user IDs. Superusers bypass restricted mode and can run superuser-only commands.
 
-```
-docker compose up -d
-```
+Approved users are stored per group in `approved_users`. Approved users can save notes, todos, and reminders in that group.
 
-Check logs:
+Allowed groups are stored in `allowed_groups`. In restricted mode, a group must be allowed before normal users can use commands.
 
-```
-docker logs trisf-assistant
-```
+Restricted mode blocks a command only when both conditions are true:
 
-Expected output:
-
-```
-trisf-assistant bot running
+```text
+chat_id is not in allowed_groups
+AND
+user_id is not in SUPERUSER_IDS
 ```
 
----
+Group admins can run admin commands in allowed groups. Superusers can run privileged commands even before a group is allowed.
 
-# First-Time Setup in Telegram
+## Notes
 
-Add bot ke group.
+Create a note directly:
 
-Whitelist group:
-
-```
-/allowgroup
+```text
+/save key value
 ```
 
-Approve writer pertama:
+Save a replied message as a note:
 
-Reply user message:
-
-```
-/approve
-```
-
----
-
-# Permission Model
-
-Hierarchy:
-
-```
-SUPERUSER
-↓
-GROUP ADMIN
-↓
-APPROVED USER
-↓
-MEMBER
+```text
+reply to a text message or media caption
+/save key
 ```
 
-Access matrix:
+Examples:
 
-| Role      | Save Notes | Update/Delete | Allow Group |
-| --------- | ---------- | ------------- | ----------- |
-| Superuser | ✅          | ✅             | ✅           |
-| Admin     | ✅          | ✅             | ❌           |
-| Approved  | ✅          | ❌             | ❌           |
-| Member    | ❌          | ❌             | ❌           |
-
----
-
-# Notes Shortcut System
-
-Create shortcut:
-
-```
+```text
 /save deploy deploy jam 23:00
 ```
 
-Execute shortcut:
+If a user replies to `Kong Production eli...` and sends:
 
+```text
+/save kong-prod
 ```
-/deploy
+
+the note key is `kong-prod` and the note value is the replied message text or caption.
+
+Lookup a note:
+
+```text
+/key
 ```
 
 List notes:
 
-```
+```text
 /notes
 ```
 
-Update notes:
+Update an existing note:
 
-```
-/update deploy deploy jam 22:30
-```
-
-Delete notes:
-
-```
-/delete deploy
+```text
+/update key new value
 ```
 
----
+Delete a note:
 
-# Approval System
-
-Approve writer:
-
-Reply message:
-
-```
-/approve
+```text
+/delete key
 ```
 
-Approve via user id:
+Notes are stored in a per-group namespace using `chat_id`.
 
-```
-/approve 12345678
-```
+## Todo
 
-Revoke access:
+List todos for the current group:
 
-```
-/revoke 12345678
+```text
+/todo
 ```
 
-List approved users:
+Add a todo:
 
+```text
+/todo add check backup server
 ```
-/approvelist
+
+Backward-compatible add:
+
+```text
+/todo check backup server
 ```
 
----
+Mark a todo as completed:
 
-# Reminder Scheduler
-
-Examples:
-
+```text
+/todo done 1
+/todo complete 1
 ```
+
+Delete a todo:
+
+```text
+/todo delete 1
+```
+
+`done` marks the todo as completed. `delete` removes the row.
+
+## Reminders
+
+Create reminders:
+
+```text
 /remind 10m restart nginx
 /remind 2h deploy staging
 /remind 1d backup database
 ```
 
-Supported units:
+Supported units are `m`, `h`, and `d`. The scheduler worker sends due reminders in the background.
 
-```
-m = minute
-h = hour
-d = day
-```
+## Group Access
 
-Reminder worker berjalan otomatis di background.
+Allow the current group:
 
----
-
-# Todo Tracker
-
-Add task:
-
-```
-/todo cek backup server
-```
-
-List tasks:
-
-```
-/todo
-```
-
-Complete task:
-
-```
-/done 1
-```
-
----
-
-# Runbook SOP
-
-Add runbook:
-
-```
-/runbook add deployprod git pull && migrate && restart
-```
-
-Execute runbook:
-
-```
-/runbook deployprod
-```
-
----
-
-# On-Call Tracker
-
-Set on-call user:
-
-```
-/oncall @username
-```
-
-Check status:
-
-```
-/status oncall
-```
-
----
-
-# AFK Status
-
-Set AFK:
-
-```
-/afk meeting
-```
-
-AFK status otomatis clear saat user mengirim pesan kembali.
-
----
-
-# Audit Log
-
-View activity:
-
-```
-/audit
-```
-
-Filter specific key:
-
-```
-/audit deployprod
-```
-
-Tracks:
-
-* save
-* update
-* delete
-* approve
-* revoke
-* allowgroup
-* import
-* export
-
----
-
-# Export Notes
-
-Backup notes:
-
-```
-/export
-```
-
-Download JSON file dari Telegram.
-
----
-
-# Import Notes
-
-Restore notes:
-
-```
-/import
-```
-
-Upload JSON file hasil export.
-
----
-
-# Health Check Commands
-
-trisf-assistant menyediakan command monitoring runtime untuk membantu troubleshooting langsung dari Telegram group.
-
-Command ini tersedia untuk:
-
-* superuser
-* group admin
-
----
-
-## /health
-
-Menampilkan status umum bot:
-
-```
-/health
-```
-
-Contoh output:
-
-```
-🤖 trisf-assistant health check
-
-bot: OK
-database: OK
-scheduler: OK
-mode: restricted
-uptime: 2h 14m
-```
-
-Digunakan untuk memastikan:
-
-* bot berjalan normal
-* database reachable
-* scheduler aktif
-* deployment mode aktif
-* runtime uptime
-
----
-
-## /status bot
-
-Menampilkan runtime status bot:
-
-```
-/status bot
-```
-
-Contoh output:
-
-```
-status: running
-uptime: 2h 14m
-```
-
----
-
-## /status db
-
-Menampilkan status koneksi database:
-
-```
-/status db
-```
-
-Contoh output:
-
-```
-database OK (4 ms)
-```
-
-Digunakan untuk troubleshooting koneksi database.
-
----
-
-## /status scheduler
-
-Menampilkan status reminder worker:
-
-```
-/status scheduler
-```
-
-Contoh output:
-
-```
-scheduler running (interval 30s)
-```
-
-Digunakan untuk memastikan reminder scheduler aktif.
-
----
-
-# Group Access Control
-
-Whitelist group:
-
-```
+```text
 /allowgroup
 ```
 
-Remove whitelist:
+Remove the current group:
 
-```
-/disallowgroup
+```text
+/removegroup
 ```
 
 List allowed groups:
 
-```
+```text
+/allowlist
 /groups
+/allowedgroups
 ```
 
-Superuser only.
+These commands require a superuser.
 
----
+## Approval
 
-# Workspace Isolation
+Approve a user by replying to their message:
 
-Semua data scoped berdasarkan:
-
-```
-chat_id
+```text
+/approve
 ```
 
-Artinya:
+Approve by Telegram user ID:
 
-* notes group A tidak bisa diakses group B
-* todo group A tidak terlihat group lain
-* runbook group A tidak terlihat group lain
-
-Database shared, workspace isolated.
-
----
-
-# Logging
-
-| Type        | Location    |
-| ----------- | ----------- |
-| Audit log   | MySQL       |
-| Runtime log | docker logs |
-| Error log   | bot.log     |
-
----
-
-# Deployment Mode
-
-Restricted mode:
-
-```
-BOT_MODE=restricted
+```text
+/approve 12345678
 ```
 
-Hanya group whitelist bisa menggunakan bot.
+Revoke approval:
 
-Open mode:
-
-```
-BOT_MODE=open
+```text
+/revoke 12345678
 ```
 
-Bot aktif di semua group.
+List approved users:
 
----
-
-# Security Best Practices
-
-Recommended:
-
-* gunakan restricted mode
-* set SUPERUSER_IDS
-* jangan commit file `.env`
-* gunakan database user khusus bot
-* gunakan Docker deployment
-
----
-
-# Docker Commands
-
-Start:
-
-```
-docker compose up -d
+```text
+/approvelist
 ```
 
-Restart:
+Approval commands can be run by group admins in allowed groups and by superusers.
 
-```
-docker compose restart
+## Oncall
+
+Show current on-call user:
+
+```text
+/oncall
+/oncall status
 ```
 
-Stop:
+Set on-call user:
 
-```
-docker compose down
+```text
+/oncall set @username
 ```
 
-Logs:
+Clear on-call status:
 
+```text
+/oncall clear
 ```
+
+`/oncall` and `/oncall status` are available to everyone in allowed groups. `/oncall set` and `/oncall clear` require a group admin or superuser.
+
+## AFK
+
+Set AFK status:
+
+```text
+/afk meeting
+```
+
+When another user mentions an AFK user or replies to the AFK user's message, the bot replies with the AFK reason and how long the user has been AFK.
+
+When the AFK user sends any new message, the bot clears the AFK status automatically and replies that the user is back.
+
+## Audit
+
+Show recent audit entries for the current group:
+
+```text
+/audit
+```
+
+Filter by target:
+
+```text
+/audit deploy
+```
+
+Audit entries are stored per group.
+
+## Backup
+
+Export current group data:
+
+```text
+/export
+```
+
+Default export is group-scoped. It exports only the current `chat_id` for notes, todos, reminders, approvals, and on-call status.
+
+Export all groups data:
+
+```text
+/export all
+```
+
+`/export` and `/import` require a superuser. Operational rule: run full export from a private chat with the bot because it may contain data for multiple groups.
+
+Import a backup:
+
+```text
+/import
+```
+
+The bot asks for a JSON backup file. Upload the exported JSON document. Import restores rows for the current `chat_id`.
+
+## Health
+
+General health check:
+
+```text
+/health
+```
+
+Status usage:
+
+```text
+/status
+```
+
+Database status:
+
+```text
+/status db
+```
+
+Other implemented status targets:
+
+```text
+/status bot
+/status scheduler
+```
+
+Health and status commands require a group admin or superuser.
+
+## Logging
+
+Runtime logs are written to:
+
+```text
+/app/logs/bot.log
+```
+
+In Docker deployment, this is mounted to:
+
+```text
+/mnt/nfs/docker/trisf-assistant/logs
+```
+
+Container logs are still available with:
+
+```bash
 docker logs trisf-assistant
 ```
 
----
+## Security Notes
 
-# Troubleshooting
+Use `BOT_MODE=restricted` for production.
 
-Bot tidak respon command:
+Do not commit `.env`.
 
-Pastikan:
+Use a dedicated MySQL user for the bot.
 
-```
-privacy mode disabled
-```
-
-Database error:
-
-Check:
-
-```
-.env config
-schema.sql imported
-DB reachable
-```
-
-Reminder tidak jalan:
-
-Check container logs:
-
-```
-docker logs trisf-assistant
-```
-
----
-
-# Usage Scope
-
-trisf-assistant dirancang sebagai:
-
-```
-internal team assistant bot
-```
-
-bukan:
-
-```
-public automation bot
-```
+Keep `SUPERUSER_IDS` limited to trusted operators.
