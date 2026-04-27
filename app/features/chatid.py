@@ -1,3 +1,6 @@
+import html
+
+
 async def chatid(update, context):
 
     message = update.message
@@ -14,17 +17,17 @@ async def chatid(update, context):
 
             text = (
                 "👤 Chat info\n\n"
-                f"chat_id: `{chat.id}`\n"
-                f"type: {chat.type}"
+                f"chat_id: <code>{chat.id}</code>\n"
+                f"type: {html.escape(chat.type)}"
             )
 
         elif thread_id:
 
             text = (
                 "🧵 Topic info\n\n"
-                f"chat_id: `{chat.id}`\n"
-                f"thread_id: `{thread_id}`\n"
-                f"type: {chat.type}"
+                f"chat_id: <code>{chat.id}</code>\n"
+                f"thread_id: <code>{thread_id}</code>\n"
+                f"type: {html.escape(chat.type)}"
             )
 
         else:
@@ -33,13 +36,13 @@ async def chatid(update, context):
 
             text = (
                 "👥 Chat info\n\n"
-                f"chat_id: `{chat.id}`\n"
-                f"type: {chat.type}\n"
-                f"title: {title}"
+                f"chat_id: <code>{chat.id}</code>\n"
+                f"type: {html.escape(chat.type)}\n"
+                f"title: {html.escape(title)}"
             )
 
         print("chatid handler triggered")
-        await message.reply_text(text, parse_mode="Markdown")
+        await message.reply_text(text, parse_mode="HTML")
 
     except Exception as e:
 
