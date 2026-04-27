@@ -67,7 +67,8 @@ CREATE TABLE runbooks (
 CREATE TABLE oncall_status (
  chat_id BIGINT PRIMARY KEY,
  user_id BIGINT,
- updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+ username TEXT,
+ updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS allowed_groups (

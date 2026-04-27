@@ -16,6 +16,7 @@ from app.features.audit import audit
 from app.features.groups import allowedgroups, allowgroup, removegroup
 from app.features.health import health, status
 from app.features.notes import delete, lookup, notes, save, update_note
+from app.features.oncall import oncall_handler
 from app.features.reminders import remind
 from app.features.todos import todo
 from app.scheduler import reminder_worker
@@ -69,6 +70,7 @@ def main():
     app.add_handler(CommandHandler("remind", remind))
     app.add_handler(CommandHandler("audit", audit))
     app.add_handler(CommandHandler("afk", afk))
+    app.add_handler(CommandHandler("oncall", oncall_handler))
 
     app.add_handler(CommandHandler("health", health))
     app.add_handler(CommandHandler("status", status))
