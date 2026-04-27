@@ -30,6 +30,8 @@ Current registered command handlers:
 /import
 /health
 /status
+/id
+/chatid
 ```
 
 Unknown commands are handled as note lookups. For example, `/deploy` looks for a saved note with key `deploy`.
@@ -223,6 +225,64 @@ List allowed groups:
 ```
 
 These commands require a superuser.
+
+## Identifier Commands
+
+Show Telegram user information for the current user:
+
+```text
+/id
+```
+
+Reply to a user message and run:
+
+```text
+/id
+```
+
+The bot shows information for the replied user.
+
+Output format:
+
+```text
+👤 User info
+
+id:
+username:
+name:
+is_bot:
+```
+
+`username` may be empty if the user has no public username.
+
+Show Telegram chat identifier information:
+
+```text
+/chatid
+```
+
+In a group without a topic, the output format is:
+
+```text
+👥 Chat info
+
+chat_id:
+type:
+title:
+```
+
+In a forum topic thread, the output format is:
+
+```text
+🧵 Topic info
+
+chat_id:
+thread_id:
+title:
+type:
+```
+
+`thread_id` only appears when the command is executed inside a forum topic thread.
 
 ## Approval
 
