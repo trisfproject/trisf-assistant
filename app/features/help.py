@@ -140,10 +140,9 @@ async def help_button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE
             "📍 Messages\n\n"
             "/pin\nReply to a message to pin it\n\n"
             "/unpin\nReply to a pinned message to unpin it\n\n"
-            "Available to:\n"
-            "Approved users\n"
-            "Group admins\n"
-            "Superusers",
+            "/afk <reason>\n"
+            "Mark yourself as away.\n"
+            "The bot notifies others when they mention or reply to you.",
             reply_markup=submenu_keyboard(),
         )
         return
@@ -186,6 +185,10 @@ async def help_button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE
                 "🔐 Admin tools\n\n"
                 "/approvelist\n"
                 "Show approved users in this group.\n\n"
+                "/audit\n"
+                "Show recent audit log entries.\n\n"
+                "/audit <target>\n"
+                "Filter audit entries by target.\n\n"
                 "/export\n"
                 "Create a backup export.\n\n"
                 "/import\n"
