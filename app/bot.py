@@ -21,7 +21,7 @@ from app.features.backup import (
 from app.features.chatid import chatid
 from app.features.groups import allowedgroups, allowgroup, removegroup
 from app.features.health import health, status
-from app.features.id import show_id
+from app.features.id import remember_user, show_id
 from app.features.notes import delete, lookup, notes, save, update_note
 from app.features.oncall import oncall_handler
 from app.features.reminders import remind
@@ -57,6 +57,8 @@ def main():
     configure_logging()
 
     app = ApplicationBuilder().token(BOT_TOKEN).build()
+
+    app.add_handler(MessageHandler(filters.ALL, remember_user), group=-2)
 
     app.add_handler(CommandHandler("save", save))
     app.add_handler(CommandHandler("update", update_note))
