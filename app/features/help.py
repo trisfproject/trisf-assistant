@@ -1,21 +1,25 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import ContextTypes
 
-from app.permissions import is_superuser, is_writer
+from app.permissions import is_superuser
 
 
-def is_approved_user(chat_id, user_id):
+async def can_view_admin(context, chat_id, user_id):
+    if is_superuser(user_id):
+        return True
+
     if chat_id is None:
         return False
 
-    return is_writer(chat_id, user_id)
+    try:
+        member = await context.bot.get_chat_member(chat_id, user_id)
+    except Exception:
+        return False
+
+    return member.status in ("administrator", "creator")
 
 
-def can_view_admin(chat_id, user_id):
-    return is_superuser(user_id) or is_approved_user(chat_id, user_id)
-
-
-def build_help_keyboard(user_id, chat_id=None):
+def build_help_keyboard(show_admin=False):
     keyboard = [
         [
             InlineKeyboardButton("📌 Notes", callback_data="help_notes"),
@@ -31,23 +35,22 @@ def build_help_keyboard(user_id, chat_id=None):
         ],
     ]
 
-    admin_row = []
-    if can_view_admin(chat_id, user_id):
-        admin_row.append(
-            InlineKeyboardButton("🔐 Admin", callback_data="help_admin")
-        )
-
-    if admin_row:
-        keyboard.append(admin_row)
-
-    keyboard.append(
-        [
-            InlineKeyboardButton(
-                "📢 Channel",
-                url="https://t.me/trisfproject",
-            )
-        ]
+    channel_button = InlineKeyboardButton(
+        "📢 Channel",
+        url="https://t.me/trisfproject",
     )
+
+    if show_admin:
+        keyboard.append(
+            [
+                InlineKeyboardButton("🔐 Admin", callback_data="help_admin"),
+                channel_button,
+            ]
+        )
+    else:
+        keyboard.append([channel_button])
+
+    keyboard.append([InlineKeyboardButton("✅ Done", callback_data="help_done")])
 
     return keyboard
 
@@ -72,7 +75,8 @@ def submenu_keyboard():
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     chat_id = update.effective_chat.id if update.effective_chat else None
-    keyboard = build_help_keyboard(user_id, chat_id)
+    show_admin = await can_view_admin(context, chat_id, user_id)
+    keyboard = build_help_keyboard(show_admin)
 
     await update.message.reply_text(
         "🤖 trisf assistant\n\nWhat do you want to check?",
@@ -87,6 +91,7 @@ async def help_button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE
     data = query.data
     user_id = query.from_user.id
     chat_id = query.message.chat.id if query.message and query.message.chat else None
+    show_admin = await can_view_admin(context, chat_id, user_id)
 
     if data == "help_done":
         try:
@@ -96,7 +101,7 @@ async def help_button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE
         return
 
     if data == "help_back":
-        keyboard = build_help_keyboard(user_id, chat_id)
+        keyboard = build_help_keyboard(show_admin)
         await query.edit_message_text(
             "🤖 trisf assistant\n\nWhat do you want to check?",
             reply_markup=InlineKeyboardMarkup(keyboard),
@@ -119,14 +124,10 @@ async def help_button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE
         text = (
             "📋 Tasks\n\n"
             "/todo\n"
-            "/todo done <id>"
+            "/todo done <id>\n"
+            "/todo add <text> (approved only)\n"
+            "/todo delete <id> (approved only)"
         )
-
-        if can_view_admin(chat_id, user_id):
-            text += (
-                "\n/todo add <text>\n"
-                "/todo delete <id>"
-            )
 
         await query.edit_message_text(
             text,
@@ -170,28 +171,30 @@ async def help_button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE
         await query.edit_message_text(
             "👤 Info\n\n"
             "/id\n"
-            "/chatid",
+            "Show your Telegram user ID.\n"
+            "Reply to a user message to show their ID.\n\n"
+            "/chatid\n"
+            "Show current chat ID and type.\n"
+            "In forum topics, also shows thread ID.",
             reply_markup=submenu_keyboard(),
         )
         return
 
     if data == "help_admin":
-        if is_superuser(user_id):
+        if show_admin:
             text = (
                 "🔐 Admin tools\n\n"
-                "/approve\n"
-                "/revoke\n"
-                "/approvelist\n\n"
-                "/groups\n"
-                "/allowgroup\n"
-                "/allowlist\n\n"
+                "/approvelist\n"
+                "Show approved users in this group.\n\n"
                 "/export\n"
-                "/import"
+                "Create a backup export.\n\n"
+                "/import\n"
+                "Restore data from a backup JSON file."
             )
         else:
             text = (
                 "🔐 Admin tools\n\n"
-                "Some admin commands require superuser access."
+                "Admin menu is available to group admins, owners, and superusers."
             )
 
         await query.edit_message_text(
