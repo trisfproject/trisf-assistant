@@ -11,7 +11,7 @@ from telegram.ext import (
 )
 
 from app.features.approvals import approve, approvelist, revoke
-from app.features.afk import afk
+from app.features.afk import afk, afk_watcher
 from app.features.audit import audit
 from app.features.groups import allowedgroups, allowgroup, removegroup
 from app.features.health import health, status
@@ -74,6 +74,7 @@ def main():
     app.add_handler(CommandHandler("status", status))
 
     app.add_handler(MessageHandler(filters.COMMAND, lookup))
+    app.add_handler(MessageHandler(filters.ALL, afk_watcher), group=1)
 
     async def post_init(app):
         app.create_task(reminder_worker(app))
