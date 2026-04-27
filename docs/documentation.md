@@ -34,7 +34,7 @@ Current registered command handlers:
 /chatid
 ```
 
-Unknown commands are handled as note lookups. For example, `/deploy` looks for a saved note with key `deploy`.
+Messages that start with `#` are handled as note lookups. For example, `#deploy` looks for a saved note with key `deploy`.
 
 ## Deployment
 
@@ -132,8 +132,10 @@ the note key is `kong-prod` and the note value is the replied message text or ca
 Lookup a note:
 
 ```text
-/key
+#key
 ```
+
+Use `#note_key` to retrieve saved notes.
 
 List notes:
 

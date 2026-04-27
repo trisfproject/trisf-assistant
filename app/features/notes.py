@@ -174,13 +174,21 @@ async def notes(update, context):
 
 
 async def lookup(update, context):
+    message = update.message
+    text = (message.text or "").strip() if message else ""
+
+    if not text.startswith("#"):
+        return
 
     if not await check_group(update):
         return
 
     chat = update.effective_chat.id
 
-    key = update.message.text.split()[0][1:]
+    key = text[1:].split()[0]
+
+    if not key:
+        return
 
     cursor = conn.cursor()
 
@@ -197,9 +205,7 @@ async def lookup(update, context):
 
     if row:
         await update.message.reply_text(
-            format_note_content(row[0]),
+            f"📌 {html.escape(key)}\n\n<pre>{html.escape(row[0])}</pre>",
             parse_mode="HTML",
         )
         return
-
-    await update.message.reply_text(NOTE_NOT_FOUND)

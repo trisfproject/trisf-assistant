@@ -92,7 +92,7 @@ def main():
             import_document_handler,
         )
     )
-    app.add_handler(MessageHandler(filters.COMMAND, lookup))
+    app.add_handler(MessageHandler(filters.TEXT, lookup))
     app.add_handler(MessageHandler(filters.ALL, afk_watcher), group=1)
 
     async def post_init(app):
