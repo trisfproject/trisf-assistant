@@ -40,6 +40,7 @@ from app.features.network import (
 )
 from app.features.notes import delete, lookup, notes, save, update_note
 from app.features.oncall import oncall_handler
+from app.features.password import password_command
 from app.features.pin import pin_command, unpin_command
 from app.features.purge import purge_command
 from app.features.reminders import remind
@@ -121,6 +122,7 @@ def main():
     app.add_handler(CommandHandler("dns", dns_command))
     app.add_handler(CommandHandler("http", http_command))
     app.add_handler(CommandHandler("whois", whois_command))
+    app.add_handler(CommandHandler("pw", password_command))
     app.add_handler(CommandHandler("pin", pin_command))
     app.add_handler(CommandHandler("unpin", unpin_command))
     app.add_handler(CallbackQueryHandler(help_button_handler, pattern="^help_"))

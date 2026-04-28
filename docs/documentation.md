@@ -42,6 +42,7 @@ Current registered command handlers:
 /dns
 /http
 /whois
+/pw
 /pin
 /unpin
 ```
@@ -358,6 +359,7 @@ Help categories:
 ⏰ Reminders
 🌐 Network
 👤 Info
+🧰 Utilities
 🔐 Admin
 📢 Channel
 ```
@@ -461,6 +463,43 @@ Response format:
 🌐 Whois result
 
 parsed registration info
+```
+
+## Utility Commands
+
+### /pw
+
+Generate secure password.
+
+Usage:
+
+```text
+/pw
+/pw 24
+```
+
+Default:
+
+```text
+16 characters
+```
+
+Allowed range:
+
+```text
+8-64 characters
+```
+
+Charset:
+
+```text
+human-safe characters without ambiguous symbols
+```
+
+Example:
+
+```text
+/pw 20
 ```
 
 ## Message Pinning Commands

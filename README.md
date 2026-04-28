@@ -29,6 +29,7 @@ Superusers can bootstrap access for a new group using `/allowgroup`.
 | Audit | `/audit` |
 | Backup | `/export`, `/import` |
 | Health | `/health`, `/status` |
+| Utilities | `/pw` |
 | Moderation | `/promote`, `/demote`, `/admins`, `/del`, `/kick`, `/ban`, `/unban`, `/purge` |
 
 Full usage guide: [docs/documentation.md](docs/documentation.md)

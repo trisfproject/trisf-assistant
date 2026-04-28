@@ -37,6 +37,9 @@ def build_help_keyboard(show_admin=False):
             InlineKeyboardButton("🌐 Network", callback_data="help_network"),
             InlineKeyboardButton("👤 Info", callback_data="help_info"),
         ],
+        [
+            InlineKeyboardButton("🧰 Utilities", callback_data="help_utilities"),
+        ],
     ]
 
     channel_button = InlineKeyboardButton(
@@ -180,6 +183,15 @@ async def help_button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE
             "/chatid\n"
             "Show current chat ID and type.\n"
             "In forum topics, also shows thread ID.",
+            reply_markup=submenu_keyboard(),
+        )
+        return
+
+    if data == "help_utilities":
+        await query.edit_message_text(
+            "🧰 Utilities\n\n"
+            "/pw\n"
+            "Generate secure password",
             reply_markup=submenu_keyboard(),
         )
         return
