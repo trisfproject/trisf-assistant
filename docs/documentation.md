@@ -29,6 +29,7 @@ Current registered command handlers:
 /export
 /import
 /health
+/help
 /status
 /id
 /chatid
@@ -181,8 +182,6 @@ Response:
 
 ```text
 📝 Todo added
-
-#12 restart nginx
 ```
 
 Backward-compatible add:
@@ -229,6 +228,20 @@ Create reminders:
 
 Supported units are `m`, `h`, and `d`. The scheduler worker sends due reminders in the background.
 
+Reminder scheduling replies mention the requester:
+
+```text
+⏰ Reminder scheduled for <user> in 10 minutes
+```
+
+Due reminders are sent back to the chat or forum topic where they were created:
+
+```text
+⏰ Reminder for <user>
+
+restart nginx
+```
+
 ## Group Access
 
 Allow the current group:
@@ -269,6 +282,8 @@ Reply to a user message and run:
 
 The bot shows information for the replied user.
 
+Username lookup with `/id @username` is not supported by Telegram for regular members. Reply to the user's message and run `/id` instead.
+
 Output format:
 
 ```text
@@ -280,12 +295,21 @@ name:
 is_bot:
 ```
 
-`username` may be empty if the user has no public username.
+`username` is shown as `none` if the user has no public username.
 
 Show Telegram chat identifier information:
 
 ```text
 /chatid
+```
+
+In a private chat, the output format is:
+
+```text
+👤 Chat info
+
+chat_id:
+type:
 ```
 
 In a group without a topic, the output format is:
@@ -305,11 +329,35 @@ In a forum topic thread, the output format is:
 
 chat_id:
 thread_id:
-title:
 type:
 ```
 
 `thread_id` only appears when the command is executed inside a forum topic thread.
+
+## Help Menu
+
+Open the interactive inline-button help menu:
+
+```text
+/help
+```
+
+The menu groups commands by category and includes Back and Done buttons. The Admin category is shown to superusers and Telegram group admins or owners.
+
+Help categories:
+
+```text
+📌 Notes
+📋 Tasks
+📍 Messages
+⏰ Reminders
+🌐 Network
+👤 Info
+🔐 Admin
+📢 Channel
+```
+
+The Admin category includes `/approvelist`, `/audit`, `/export`, and `/import`.
 
 ## Network Utility Commands
 
@@ -445,6 +493,8 @@ Permissions:
 
 ```text
 Approved users
+Group admins
+Group owners
 Superusers
 ```
 
@@ -470,6 +520,8 @@ Permissions:
 
 ```text
 Approved users
+Group admins
+Group owners
 Superusers
 ```
 
@@ -479,6 +531,12 @@ Response:
 
 ```text
 ⚠️ I need admin permission to pin messages in this chat.
+```
+
+For `/unpin`, the bot may reply:
+
+```text
+⚠️ I need admin permission to unpin messages in this chat.
 ```
 
 ## Approval
@@ -559,6 +617,8 @@ Filter by target:
 ```
 
 Audit entries are stored per group.
+
+Audit commands require a group admin or superuser.
 
 ## Backup
 
