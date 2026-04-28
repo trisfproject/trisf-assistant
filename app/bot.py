@@ -12,6 +12,11 @@ from telegram.ext import (
 )
 
 from app.features.approvals import approve, approvelist, revoke
+from app.features.admin_tools import (
+    admins_command,
+    demote_command,
+    promote_command,
+)
 from app.features.afk import afk, afk_watcher
 from app.features.audit import audit
 from app.features.backup import (
@@ -75,6 +80,9 @@ def main():
     app.add_handler(CommandHandler("approve", approve))
     app.add_handler(CommandHandler("revoke", revoke))
     app.add_handler(CommandHandler("approvelist", approvelist))
+    app.add_handler(CommandHandler("promote", promote_command))
+    app.add_handler(CommandHandler("demote", demote_command))
+    app.add_handler(CommandHandler("admins", admins_command))
 
     app.add_handler(CommandHandler("allowgroup", allowgroup))
     app.add_handler(CommandHandler("removegroup", removegroup))

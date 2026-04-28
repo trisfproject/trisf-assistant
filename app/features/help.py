@@ -8,6 +8,10 @@ async def can_view_admin(context, chat_id, user_id):
     if is_superuser(user_id):
         return True
 
+    return await is_telegram_group_admin(context, chat_id, user_id)
+
+
+async def is_telegram_group_admin(context, chat_id, user_id):
     if chat_id is None:
         return False
 
@@ -92,6 +96,7 @@ async def help_button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE
     user_id = query.from_user.id
     chat_id = query.message.chat.id if query.message and query.message.chat else None
     show_admin = await can_view_admin(context, chat_id, user_id)
+    show_admin_management = await is_telegram_group_admin(context, chat_id, user_id)
 
     if data == "help_done":
         try:
@@ -194,6 +199,16 @@ async def help_button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE
                 "/import\n"
                 "Restore data from a backup JSON file."
             )
+
+            if show_admin_management:
+                text += (
+                    "\n\n/admins\n"
+                    "Show current Telegram group admins.\n\n"
+                    "/promote\n"
+                    "Promote a replied user as group admin.\n\n"
+                    "/demote\n"
+                    "Remove admin role from a replied user."
+                )
         else:
             text = (
                 "🔐 Admin tools\n\n"

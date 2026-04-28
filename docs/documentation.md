@@ -16,6 +16,9 @@ Current registered command handlers:
 /approve
 /revoke
 /approvelist
+/promote
+/demote
+/admins
 /allowgroup
 /removegroup
 /allowedgroups
@@ -357,7 +360,7 @@ Help categories:
 📢 Channel
 ```
 
-The Admin category includes `/approvelist`, `/audit`, `/export`, and `/import`.
+The Admin category includes `/approvelist`, `/audit`, `/export`, and `/import`. Telegram group admins also see `/admins`, `/promote`, and `/demote`.
 
 ## Network Utility Commands
 
@@ -566,6 +569,46 @@ List approved users:
 ```
 
 Approval commands can be run by group admins in allowed groups and by superusers.
+
+## Admin Management Commands
+
+Manage Telegram group administrators.
+
+These commands only work in group chats. They require the user running the command to already be a Telegram group admin or group owner. Superuser access alone is not enough.
+
+Promote a user as group admin:
+
+```text
+reply to a user message
+/promote
+```
+
+Or resolve an existing admin by username:
+
+```text
+/promote @username
+```
+
+Remove admin role:
+
+```text
+reply to a user message
+/demote
+```
+
+Show the current group admin list:
+
+```text
+/admins
+```
+
+Permissions:
+
+```text
+Telegram group admins only
+```
+
+The bot must also be a group admin with permission to add new admins.
 
 ## Oncall
 
