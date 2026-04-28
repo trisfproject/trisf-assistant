@@ -43,6 +43,7 @@ Current registered command handlers:
 /http
 /whois
 /pw
+/push
 /pin
 /unpin
 ```
@@ -500,6 +501,36 @@ Example:
 
 ```text
 /pw 20
+```
+
+### /push
+
+Create temporary secret link using PasswordPusher.
+
+Usage:
+
+```text
+/push secret
+reply message + /push
+/push lock secret
+reply message + /push lock
+/push lock 2234 secret
+reply message + /push lock 2234
+```
+
+Default settings:
+
+```text
+5 views
+7 days expiration
+retrieval step enabled
+deletable enabled
+```
+
+Lock mode:
+
+```text
+adds passphrase protection
 ```
 
 ## Message Pinning Commands
