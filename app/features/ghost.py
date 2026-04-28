@@ -36,7 +36,10 @@ async def ghost_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ghost_text = None
 
     if message.reply_to_message:
-        ghost_text = message.reply_to_message.text
+        if context.args:
+            ghost_text = " ".join(context.args)
+        else:
+            ghost_text = message.reply_to_message.text
     else:
         ghost_text = _command_body(message.text or message.caption)
 
