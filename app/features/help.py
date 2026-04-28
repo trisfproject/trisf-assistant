@@ -203,11 +203,15 @@ async def help_button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE
             if show_admin_management:
                 text += (
                     "\n\n/admins\n"
-                    "Show current Telegram group admins.\n\n"
+                    "Show list of group admins.\n\n"
                     "/promote\n"
-                    "Promote a replied user as group admin.\n\n"
+                    "Promote a user as moderator admin.\n\n"
                     "/demote\n"
-                    "Remove admin role from a replied user."
+                    "Remove admin role from user.\n\n"
+                    "/del\n"
+                    "Delete replied message.\n\n"
+                    "/purge\n"
+                    "Delete message range (reply to oldest message)."
                 )
         else:
             text = (

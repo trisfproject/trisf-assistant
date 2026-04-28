@@ -614,6 +614,26 @@ The bot must also be a group admin with permission to add new admins.
 
 ## Moderation Commands
 
+Promote a user as moderator admin:
+
+```text
+reply to a user message
+/promote
+```
+
+Remove admin role from user:
+
+```text
+reply to a user message
+/demote
+```
+
+Show list of group admins:
+
+```text
+/admins
+```
+
 Delete a replied message:
 
 ```text
