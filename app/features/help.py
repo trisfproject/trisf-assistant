@@ -37,9 +37,6 @@ def build_help_keyboard(show_admin=False):
             InlineKeyboardButton("🌐 Network", callback_data="help_network"),
             InlineKeyboardButton("👤 Info", callback_data="help_info"),
         ],
-        [
-            InlineKeyboardButton("🧰 Utilities", callback_data="help_utilities"),
-        ],
     ]
 
     channel_button = InlineKeyboardButton(
@@ -50,14 +47,23 @@ def build_help_keyboard(show_admin=False):
     if show_admin:
         keyboard.append(
             [
+                InlineKeyboardButton("🧰 Utilities", callback_data="help_utilities"),
                 InlineKeyboardButton("🔐 Admin", callback_data="help_admin"),
-                channel_button,
             ]
         )
     else:
-        keyboard.append([channel_button])
+        keyboard.append(
+            [
+                InlineKeyboardButton("🧰 Utilities", callback_data="help_utilities"),
+            ]
+        )
 
-    keyboard.append([InlineKeyboardButton("✅ Done", callback_data="help_done")])
+    keyboard.append(
+        [
+            channel_button,
+            InlineKeyboardButton("✅ Done", callback_data="help_done"),
+        ]
+    )
 
     return keyboard
 
