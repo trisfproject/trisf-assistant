@@ -19,6 +19,7 @@ Current registered command handlers:
 /promote
 /demote
 /admins
+/del
 /allowgroup
 /removegroup
 /allowedgroups
@@ -609,6 +610,25 @@ Telegram group admins only
 ```
 
 The bot must also be a group admin with permission to add new admins.
+
+## Moderation Commands
+
+Delete a replied message:
+
+```text
+reply to a message
+/del
+```
+
+The bot deletes the replied message and the `/del` command message.
+
+Permissions:
+
+```text
+Telegram group admins only
+```
+
+The bot must also be a group admin with permission to delete messages.
 
 ## Oncall
 

@@ -25,6 +25,7 @@ from app.features.backup import (
     import_handler,
 )
 from app.features.chatid import chatid
+from app.features.delete_message import delete_command
 from app.features.groups import allowedgroups, allowgroup, removegroup
 from app.features.health import health, status
 from app.features.help import help_button_handler, help_command
@@ -83,6 +84,7 @@ def main():
     app.add_handler(CommandHandler("promote", promote_command))
     app.add_handler(CommandHandler("demote", demote_command))
     app.add_handler(CommandHandler("admins", admins_command))
+    app.add_handler(CommandHandler("del", delete_command))
 
     app.add_handler(CommandHandler("allowgroup", allowgroup))
     app.add_handler(CommandHandler("removegroup", removegroup))
