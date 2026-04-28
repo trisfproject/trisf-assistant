@@ -65,10 +65,19 @@ def _looks_like_passphrase(value):
 async def push_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.message
     body = _command_body(message.text or message.caption)
-    reply_secret = _reply_secret(message)
+    reply_secret = None
     secret = None
     passphrase = None
     lock_mode = False
+
+    if message.reply_to_message:
+        reply = message.reply_to_message
+        reply_secret = (
+            reply.text
+            or reply.caption
+            or getattr(reply, "html_text", None)
+            or getattr(reply, "markdown_text", None)
+        )
 
     if body:
         if body == "lock" or body.startswith("lock "):
@@ -88,8 +97,14 @@ async def push_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         else:
             secret = body
 
-    if not secret and reply_secret:
+    if not secret and message.reply_to_message:
         secret = reply_secret
+
+        if not secret:
+            await message.reply_text(
+                "⚠️ Could not read replied message content."
+            )
+            return
 
     if not secret:
         await message.reply_text(
