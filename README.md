@@ -4,13 +4,16 @@
 
 # trisf-assistant
 
-trisf-assistant is a Dockerized Telegram group assistant for internal teams. It provides group-scoped notes, todos, reminders, approvals, group access control, on-call status, AFK notices, backup/restore, and runtime health checks backed by MySQL.
+**trisf-assistant** is a Dockerized Telegram group assistant built for internal team workflows.  
+It helps manage shared notes, todos, reminders, approvals, group access control, moderation tools, on-call status, AFK notices, simple network diagnostics, backups, and runtime health checks — all scoped per group and backed by MySQL.
 
-The compose stack starts the bot and MySQL. MySQL initializes from `sql/schema.sql` on first startup.
+The Docker Compose stack starts both the bot and MySQL.  
+The database initializes automatically from `sql/schema.sql` on first startup.
 
 ## Restricted Mode
 
-With `BOT_MODE=restricted`, commands are blocked only when the current chat is not in `allowed_groups` and the user is not listed in `SUPERUSER_IDS`. Superusers can always bootstrap a new group with `/allowgroup`.
+With `BOT_MODE=restricted`, commands only work in chats listed in `allowed_groups`, unless the user is included in `SUPERUSER_IDS`.  
+Superusers can bootstrap access for a new group using `/allowgroup`.
 
 ## Command Quick Reference
 
@@ -26,5 +29,6 @@ With `BOT_MODE=restricted`, commands are blocked only when the current chat is n
 | Audit | `/audit` |
 | Backup | `/export`, `/import` |
 | Health | `/health`, `/status` |
+| Moderation | `/promote`, `/demote`, `/admins`, `/del`, `/kick`, `/ban`, `/unban`, `/purge` |
 
 Full usage guide: [docs/documentation.md](docs/documentation.md)
