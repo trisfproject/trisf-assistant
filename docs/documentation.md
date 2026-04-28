@@ -20,6 +20,7 @@ Current registered command handlers:
 /demote
 /admins
 /del
+/purge
 /allowgroup
 /removegroup
 /allowedgroups
@@ -629,6 +630,28 @@ Telegram group admins only
 ```
 
 The bot must also be a group admin with permission to delete messages.
+
+Delete messages in a range:
+
+```text
+reply to the oldest message
+/purge
+```
+
+The bot deletes messages from the replied message through the `/purge` command message.
+
+Limits:
+
+```text
+max 24 hours old
+max 200 messages
+```
+
+Permissions:
+
+```text
+Telegram group admins only
+```
 
 ## Oncall
 

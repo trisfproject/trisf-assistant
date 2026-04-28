@@ -39,6 +39,7 @@ from app.features.network import (
 from app.features.notes import delete, lookup, notes, save, update_note
 from app.features.oncall import oncall_handler
 from app.features.pin import pin_command, unpin_command
+from app.features.purge import purge_command
 from app.features.reminders import remind
 from app.features.todos import todo
 from app.scheduler import reminder_worker
@@ -85,6 +86,7 @@ def main():
     app.add_handler(CommandHandler("demote", demote_command))
     app.add_handler(CommandHandler("admins", admins_command))
     app.add_handler(CommandHandler("del", delete_command))
+    app.add_handler(CommandHandler("purge", purge_command))
 
     app.add_handler(CommandHandler("allowgroup", allowgroup))
     app.add_handler(CommandHandler("removegroup", removegroup))
