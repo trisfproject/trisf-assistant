@@ -1,20 +1,5 @@
 from telegram import Update
-from telegram.ext import ContextTypes
-
-
-async def is_telegram_group_admin(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat = update.effective_chat
-    user = update.effective_user
-
-    if not chat or not user or chat.type == "private":
-        return False
-
-    try:
-        member = await context.bot.get_chat_member(chat.id, user.id)
-    except Exception:
-        return False
-
-    return member.status in ("administrator", "creator")
+from telegram.ext import CommandHandler, ContextTypes
 
 
 async def resolve_target_user(update, context):
@@ -23,27 +8,37 @@ async def resolve_target_user(update, context):
 
     if context.args:
         username = context.args[0].replace("@", "")
-        members = await context.bot.get_chat_administrators(
+
+        admins = await context.bot.get_chat_administrators(
             update.effective_chat.id
         )
 
-        for admin in members:
+        for admin in admins:
             if admin.user.username == username:
                 return admin.user
 
     return None
 
 
+async def is_group_admin(update, context):
+    member = await context.bot.get_chat_member(
+        update.effective_chat.id,
+        update.effective_user.id,
+    )
+
+    return member.status in ["administrator", "creator"]
+
+
 async def promote_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat = update.effective_chat
 
-    if chat.type == "private":
+    if chat.type != "supergroup":
         await update.message.reply_text(
-            "⚠️ This command only works in groups."
+            "⚠️ This command only works in supergroups."
         )
         return
 
-    if not await is_telegram_group_admin(update, context):
+    if not await is_group_admin(update, context):
         await update.message.reply_text(
             "⛔ Only Telegram group admins can promote users."
         )
@@ -57,26 +52,45 @@ async def promote_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
+    member = await context.bot.get_chat_member(
+        chat.id,
+        target.id,
+    )
+
+    if member.status in ["administrator", "creator"]:
+        await update.message.reply_text(
+            "⚠️ User is already an admin."
+        )
+        return
+
     try:
         await context.bot.promote_chat_member(
             chat_id=chat.id,
             user_id=target.id,
-            can_change_info=False,
+            can_manage_chat=True,
             can_delete_messages=True,
+            can_restrict_members=True,
             can_invite_users=True,
-            can_pin_messages=True,
+            can_manage_video_chats=True,
             can_manage_topics=True,
+            can_change_info=True,
+            can_pin_messages=True,
             can_promote_members=False,
+            is_anonymous=False,
+            api_kwargs={
+                "can_manage_stories": True,
+                "can_manage_tags": True,
+            },
         )
 
         await update.message.reply_text(
-            f"✅ {target.full_name} promoted as group admin."
+            f"✅ {target.full_name} promoted as moderator admin."
         )
 
     except Exception as e:
         if "ChatAdminRequired" in str(e):
             await update.message.reply_text(
-                "⚠️ I need admin permission with 'Add new admins'."
+                "⚠️ I need permission: Add new admins."
             )
         else:
             await update.message.reply_text(
@@ -87,13 +101,13 @@ async def promote_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def demote_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat = update.effective_chat
 
-    if chat.type == "private":
+    if chat.type != "supergroup":
         await update.message.reply_text(
-            "⚠️ This command only works in groups."
+            "⚠️ This command only works in supergroups."
         )
         return
 
-    if not await is_telegram_group_admin(update, context):
+    if not await is_group_admin(update, context):
         await update.message.reply_text(
             "⛔ Only Telegram group admins can demote users."
         )
@@ -107,16 +121,35 @@ async def demote_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
+    member = await context.bot.get_chat_member(
+        chat.id,
+        target.id,
+    )
+
+    if member.status not in ["administrator", "creator"]:
+        await update.message.reply_text(
+            "⚠️ This user is not an admin."
+        )
+        return
+
     try:
         await context.bot.promote_chat_member(
             chat_id=chat.id,
             user_id=target.id,
-            can_change_info=False,
+            can_manage_chat=False,
             can_delete_messages=False,
+            can_restrict_members=False,
             can_invite_users=False,
-            can_pin_messages=False,
+            can_manage_video_chats=False,
             can_manage_topics=False,
+            can_change_info=False,
+            can_pin_messages=False,
             can_promote_members=False,
+            is_anonymous=False,
+            api_kwargs={
+                "can_manage_stories": False,
+                "can_manage_tags": False,
+            },
         )
 
         await update.message.reply_text(
@@ -126,7 +159,7 @@ async def demote_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         if "ChatAdminRequired" in str(e):
             await update.message.reply_text(
-                "⚠️ I need admin permission with 'Add new admins'."
+                "⚠️ I need permission: Add new admins."
             )
         else:
             await update.message.reply_text(
@@ -137,13 +170,13 @@ async def demote_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def admins_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat = update.effective_chat
 
-    if chat.type == "private":
+    if chat.type != "supergroup":
         await update.message.reply_text(
-            "⚠️ This command only works in groups."
+            "⚠️ This command only works in supergroups."
         )
         return
 
-    if not await is_telegram_group_admin(update, context):
+    if not await is_group_admin(update, context):
         await update.message.reply_text(
             "⛔ Only Telegram group admins can view admin list."
         )
@@ -151,7 +184,7 @@ async def admins_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     admins = await context.bot.get_chat_administrators(chat.id)
 
-    admin_list = []
+    result = []
 
     for admin in admins:
         user = admin.user
@@ -160,14 +193,8 @@ async def admins_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if user.username:
             name += f" (@{user.username})"
 
-        admin_list.append(f"• {name}")
+        result.append(f"• {name}")
 
-    if not admin_list:
-        await update.message.reply_text(
-            "⚠️ No admins found."
-        )
-        return
-
-    text = "👮 Group admins:\n\n" + "\n".join(admin_list)
+    text = "👮 Group admins:\n\n" + "\n".join(result)
 
     await update.message.reply_text(text)

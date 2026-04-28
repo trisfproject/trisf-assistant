@@ -360,7 +360,7 @@ Help categories:
 📢 Channel
 ```
 
-The Admin category includes `/approvelist`, `/audit`, `/export`, and `/import`. Telegram group admins also see `/admins`, `/promote`, and `/demote`.
+The Admin category includes `/approvelist`, `/audit`, `/export`, and `/import`. Telegram supergroup admins also see `/admins`, `/promote`, and `/demote`.
 
 ## Network Utility Commands
 
@@ -572,11 +572,11 @@ Approval commands can be run by group admins in allowed groups and by superusers
 
 ## Admin Management Commands
 
-Manage Telegram group administrators.
+Manage Telegram supergroup administrators.
 
-These commands only work in group chats. They require the user running the command to already be a Telegram group admin or group owner. Superuser access alone is not enough.
+These commands only work in supergroups. They require the user running the command to already be a Telegram group admin or group owner. Superuser access alone is not enough.
 
-Promote a user as group admin:
+Promote a user as moderator-level admin:
 
 ```text
 reply to a user message
