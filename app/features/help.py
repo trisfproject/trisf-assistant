@@ -197,7 +197,9 @@ async def help_button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE
         await query.edit_message_text(
             "🧰 Utilities\n\n"
             "/pw\n"
-            "Generate secure password",
+            "Generate secure password\n\n"
+            "/coffee\n"
+            "Check current coffee status (totally scientific)",
             reply_markup=submenu_keyboard(),
         )
         return

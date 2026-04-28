@@ -43,6 +43,7 @@ Current registered command handlers:
 /http
 /whois
 /pw
+/coffee
 /pin
 /unpin
 ```
@@ -500,6 +501,23 @@ Example:
 
 ```text
 /pw 20
+```
+
+### /coffee
+
+Returns random coffee level status with ops-style witty message.
+
+Usage:
+
+```text
+/coffee
+```
+
+Example output:
+
+```text
+☕ Coffee level: HIGH
+deployment mood looks promising today.
 ```
 
 ## Message Pinning Commands
