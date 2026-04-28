@@ -1,6 +1,8 @@
 import os
 import logging
 import sys
+import contextlib
+import asyncio
 
 from dotenv import load_dotenv
 from telegram.ext import (
@@ -125,9 +127,22 @@ def main():
     app.add_handler(MessageHandler(filters.ALL, afk_watcher), group=1)
 
     async def post_init(app):
-        app.create_task(reminder_worker(app))
+        app.bot_data["reminder_worker_task"] = asyncio.create_task(
+            reminder_worker(app)
+        )
+
+    async def stop_background_tasks(app):
+        task = app.bot_data.pop("reminder_worker_task", None)
+        if not task:
+            return
+
+        task.cancel()
+        with contextlib.suppress(asyncio.CancelledError):
+            await task
 
     app.post_init = post_init
+    app.post_stop = stop_background_tasks
+    app.post_shutdown = stop_background_tasks
 
     logger.info("trisf-assistant bot running")
 

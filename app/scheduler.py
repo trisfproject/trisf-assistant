@@ -53,53 +53,58 @@ def parse_reminder_payload(raw_message, user_id):
 
 async def reminder_worker(app):
 
- while True:
+ try:
+  while True:
 
-  try:
-   cursor=conn.cursor()
+   try:
+    cursor=conn.cursor()
 
-   cursor.execute("""
-   SELECT id,chat_id,user_id,message
-   FROM reminders
-   WHERE sent=FALSE AND remind_at<=NOW()
-   """)
+    cursor.execute("""
+    SELECT id,chat_id,user_id,message
+    FROM reminders
+    WHERE sent=FALSE AND remind_at<=NOW()
+    """)
 
-   rows=cursor.fetchall()
+    rows=cursor.fetchall()
 
-  except Exception:
-   logger.exception("failed to fetch due reminders")
+   except Exception:
+    logger.exception("failed to fetch due reminders")
 
-  else:
-   for r in rows:
+   else:
+    for r in rows:
 
-    try:
-     reminder = parse_reminder_payload(r[3], r[2])
-     send_kwargs = {
-      "chat_id": r[1],
-      "text": (
-       f"⏰ Reminder for {requester_mention(reminder['requester'])}\n\n"
-       f"{html.escape(reminder['text'])}"
-      ),
-      "parse_mode": "HTML",
-     }
+     try:
+      reminder = parse_reminder_payload(r[3], r[2])
+      send_kwargs = {
+       "chat_id": r[1],
+       "text": (
+        f"⏰ Reminder for {requester_mention(reminder['requester'])}\n\n"
+        f"{html.escape(reminder['text'])}"
+       ),
+       "parse_mode": "HTML",
+      }
 
-     if reminder["thread_id"]:
-      send_kwargs["message_thread_id"] = reminder["thread_id"]
+      if reminder["thread_id"]:
+       send_kwargs["message_thread_id"] = reminder["thread_id"]
 
-     await app.bot.send_message(
-      **send_kwargs
-     )
+      await app.bot.send_message(
+       **send_kwargs
+      )
 
-     cursor.execute(
-      "UPDATE reminders SET sent=TRUE WHERE id=%s",
-      (r[0],)
-     )
+      cursor.execute(
+       "UPDATE reminders SET sent=TRUE WHERE id=%s",
+       (r[0],)
+      )
 
-    except Exception:
-     logger.exception(
-      "failed to send reminder id=%s chat_id=%s",
-      r[0],
-      r[1],
-     )
+     except Exception:
+      logger.exception(
+       "failed to send reminder id=%s chat_id=%s",
+       r[0],
+       r[1],
+      )
 
-  await asyncio.sleep(30)
+   await asyncio.sleep(30)
+
+ except asyncio.CancelledError:
+  logger.info("reminder worker stopped")
+  raise
