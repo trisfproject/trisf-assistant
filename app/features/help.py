@@ -211,7 +211,13 @@ async def help_button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE
                     "/del\n"
                     "Delete replied message.\n\n"
                     "/purge\n"
-                    "Delete message range (reply to oldest message)."
+                    "Delete message range (reply to oldest message).\n\n"
+                    "/kick\n"
+                    "Remove user from group.\n\n"
+                    "/ban\n"
+                    "Ban user from group.\n\n"
+                    "/unban\n"
+                    "Unban user."
                 )
         else:
             text = (

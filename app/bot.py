@@ -44,6 +44,11 @@ from app.features.pin import pin_command, unpin_command
 from app.features.purge import purge_command
 from app.features.reminders import remind
 from app.features.todos import todo
+from app.features.user_moderation import (
+    ban_command,
+    kick_command,
+    unban_command,
+)
 from app.scheduler import reminder_worker
 
 load_dotenv()
@@ -89,6 +94,9 @@ def main():
     app.add_handler(CommandHandler("admins", admins_command))
     app.add_handler(CommandHandler("del", delete_command))
     app.add_handler(CommandHandler("purge", purge_command))
+    app.add_handler(CommandHandler("kick", kick_command))
+    app.add_handler(CommandHandler("ban", ban_command))
+    app.add_handler(CommandHandler("unban", unban_command))
 
     app.add_handler(CommandHandler("allowgroup", allowgroup))
     app.add_handler(CommandHandler("removegroup", removegroup))

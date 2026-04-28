@@ -362,7 +362,7 @@ Help categories:
 📢 Channel
 ```
 
-The Admin category includes `/approvelist`, `/audit`, `/export`, and `/import`. Telegram supergroup admins also see `/admins`, `/promote`, and `/demote`.
+The Admin category includes `/approvelist`, `/audit`, `/export`, and `/import`. Telegram supergroup admins also see `/admins`, `/promote`, `/demote`, `/del`, `/purge`, `/kick`, `/ban`, and `/unban`.
 
 ## Network Utility Commands
 
@@ -665,6 +665,32 @@ Limits:
 ```text
 max 24 hours old
 max 200 messages
+```
+
+Permissions:
+
+```text
+Telegram group admins only
+```
+
+Remove a user from the group:
+
+```text
+reply to a user message
+/kick
+```
+
+Ban a user from the group:
+
+```text
+reply to a user message
+/ban
+```
+
+Unban a user:
+
+```text
+/unban <user_id>
 ```
 
 Permissions:
