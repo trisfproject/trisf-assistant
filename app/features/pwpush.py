@@ -19,19 +19,22 @@ def generate_passphrase(length=8):
 
 def create_secret(payload, passphrase=None):
     data = {
-        "password[payload]": payload,
-        "password[expire_after_days]": 7,
-        "password[expire_after_views]": 5,
-        "password[deletable_by_viewer]": "true",
-        "password[retrieval_step]": "true",
+        "payload": payload,
+        "expire_after_days": 7,
+        "expire_after_views": 5,
+        "deletable_by_viewer": "true",
+        "retrieval_step": "true",
     }
 
     if passphrase:
-        data["password[passphrase]"] = passphrase
+        data["passphrase"] = passphrase
 
-    response = requests.post(PWPUSH_API, data=data, timeout=15)
+    response = requests.post(PWPUSH_API, data=data)
 
     if response.status_code != 200:
+        print("pwpush error:", response.status_code)
+        print(response.text)
+
         return None
 
     return response.json().get("url_token")
