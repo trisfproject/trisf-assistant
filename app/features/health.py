@@ -14,15 +14,15 @@ async def health(update, context):
     try:
         cursor = conn.cursor()
         cursor.execute("SELECT 1")
-        db_status = "OK"
+        db_status = "connected"
     except:
-        db_status = "ERROR"
+        db_status = "error"
 
     msg = f"""🤖 trisf-assistant health check
 
-🤖 bot: OK
+🤖 bot: online
 📊 database: {db_status}
-⏰ scheduler: OK
+⏰ scheduler: running
 ℹ️ mode: {BOT_MODE}
 🕔 uptime: {format_uptime()}
 """
