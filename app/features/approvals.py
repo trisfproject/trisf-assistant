@@ -3,6 +3,20 @@ from app.messages import ACCESS_DENIED
 from app.runtime import is_admin, log_action
 
 
+def is_approved_user(user_id, chat_id):
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        SELECT 1
+        FROM approved_users
+        WHERE chat_id=%s AND user_id=%s
+        """,
+        (chat_id, user_id),
+    )
+
+    return cursor.fetchone() is not None
+
+
 async def approve(update, context):
 
     if not await is_admin(update, context):

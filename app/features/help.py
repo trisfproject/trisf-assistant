@@ -154,6 +154,8 @@ async def help_button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE
             "📍 Messages\n\n"
             "/pin\nReply to a message to pin it\n\n"
             "/unpin\nReply to a pinned message to unpin it\n\n"
+            "/ghost\n"
+            "Send anonymous relay message via bot\n\n"
             "/afk <reason>\n"
             "Mark yourself as away.\n"
             "The bot notifies others when they mention or reply to you.",

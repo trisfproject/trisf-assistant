@@ -44,6 +44,7 @@ Current registered command handlers:
 /whois
 /pw
 /coffee
+/ghost
 /pin
 /unpin
 ```
@@ -518,6 +519,38 @@ Example output:
 ```text
 ☕ Coffee level: HIGH
 deployment mood looks promising today.
+```
+
+## Ghost Relay Commands
+
+### /ghost
+
+Send message anonymously through the bot.
+
+Usage:
+
+```text
+/ghost deploy production sekarang
+```
+
+Or:
+
+```text
+reply message + /ghost
+```
+
+Requirements:
+
+```text
+bot must have delete_messages permission
+```
+
+Allowed users:
+
+```text
+approved users
+group admins
+superusers
 ```
 
 ## Message Pinning Commands

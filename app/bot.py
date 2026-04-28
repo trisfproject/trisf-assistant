@@ -29,6 +29,7 @@ from app.features.backup import (
 from app.features.chatid import chatid
 from app.features.coffee import coffee_command
 from app.features.delete_message import delete_command
+from app.features.ghost import ghost_command
 from app.features.groups import allowedgroups, allowgroup, removegroup
 from app.features.health import health, status
 from app.features.help import help_button_handler, help_command
@@ -125,6 +126,7 @@ def main():
     app.add_handler(CommandHandler("whois", whois_command))
     app.add_handler(CommandHandler("pw", password_command))
     app.add_handler(CommandHandler("coffee", coffee_command))
+    app.add_handler(CommandHandler("ghost", ghost_command))
     app.add_handler(CommandHandler("pin", pin_command))
     app.add_handler(CommandHandler("unpin", unpin_command))
     app.add_handler(CallbackQueryHandler(help_button_handler, pattern="^help_"))
