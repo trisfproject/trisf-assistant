@@ -59,32 +59,43 @@ async def promote_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if member.status in ["administrator", "creator"]:
         await update.message.reply_text(
-            "⚠️ User is already an admin."
+            "⚠️ User already admin"
         )
         return
 
     try:
+        bot_member = await context.bot.get_chat_member(
+            chat.id,
+            context.bot.id,
+        )
+
         await context.bot.promote_chat_member(
             chat_id=chat.id,
             user_id=target.id,
-            can_manage_chat=True,
-            can_delete_messages=True,
-            can_restrict_members=True,
-            can_invite_users=True,
-            can_manage_video_chats=True,
-            can_manage_topics=True,
-            can_change_info=True,
-            can_pin_messages=True,
+            can_delete_messages=bot_member.can_delete_messages,
+            can_restrict_members=bot_member.can_restrict_members,
+            can_invite_users=bot_member.can_invite_users,
+            can_manage_video_chats=getattr(
+                bot_member,
+                "can_manage_video_chats",
+                False,
+            ),
+            can_manage_topics=getattr(
+                bot_member,
+                "can_manage_topics",
+                False,
+            ),
+            can_post_stories=False,
+            can_edit_stories=False,
+            can_delete_stories=False,
+            can_change_info=False,
+            can_pin_messages=False,
             can_promote_members=False,
             is_anonymous=False,
-            api_kwargs={
-                "can_manage_stories": True,
-                "can_manage_tags": True,
-            },
         )
 
         await update.message.reply_text(
-            f"✅ {target.full_name} promoted as moderator admin."
+            "✅ User promoted as moderator"
         )
 
     except Exception as e:
@@ -142,14 +153,13 @@ async def demote_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             can_invite_users=False,
             can_manage_video_chats=False,
             can_manage_topics=False,
+            can_post_stories=False,
+            can_edit_stories=False,
+            can_delete_stories=False,
             can_change_info=False,
             can_pin_messages=False,
             can_promote_members=False,
             is_anonymous=False,
-            api_kwargs={
-                "can_manage_stories": False,
-                "can_manage_tags": False,
-            },
         )
 
         await update.message.reply_text(
