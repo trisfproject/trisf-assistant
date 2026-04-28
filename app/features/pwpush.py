@@ -18,8 +18,10 @@ def generate_passphrase(length=8):
 
 
 def create_secret(payload, passphrase=None):
+    url = "https://phoenix.cygnuss-district8.com/p"
+
     data = {
-        "payload": payload,
+        "secret": payload,
         "expire_after_days": 7,
         "expire_after_views": 5,
         "deletable_by_viewer": "true",
@@ -29,15 +31,26 @@ def create_secret(payload, passphrase=None):
     if passphrase:
         data["passphrase"] = passphrase
 
-    response = requests.post(PWPUSH_API, data=data)
+    response = requests.post(
+        url,
+        data=data,
+        allow_redirects=False,
+    )
 
-    if response.status_code != 200:
+    if response.status_code not in (302, 303):
         print("pwpush error:", response.status_code)
         print(response.text)
 
         return None
 
-    return response.json().get("url_token")
+    location = response.headers.get("Location")
+
+    if not location:
+        return None
+
+    token = location.split("/")[-1]
+
+    return token
 
 
 def _command_body(message_text):
