@@ -25,13 +25,11 @@ Superusers can bootstrap access for a new group using `/allowgroup`.
 | Approvals | `/approve`, `/revoke`, `/approvelist` |
 | Group access | `/allowgroup`, `/removegroup`, `/allowedgroups`, `/allowlist`, `/groups` |
 | On-call | `/oncall` |
-| AFK | `/afk` |
 | Audit | `/audit` |
 | Backup | `/export`, `/import` |
-| Health | `/health`, `/status` |
 | Network | `/ping`, `/dns`, `/http`, `/whois` |
-| Utilities | `/pw`, `/coffee` |
-| Messages | `/pin`, `/unpin`, `/ghost` |
+| Utilities | `/pw`, `/health`, `/status` |
+| Messages | `/pin`, `/unpin`, `/ghost`, `/afk`, `/coffee` |
 | Moderation | `/promote`, `/demote`, `/admins`, `/del`, `/kick`, `/ban`, `/unban`, `/purge` |
 
 Full usage guide: [docs/documentation.md](docs/documentation.md)

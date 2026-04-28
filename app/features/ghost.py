@@ -63,4 +63,11 @@ async def ghost_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(
         chat_id=chat.id,
         text=ghost_text,
+        reply_to_message_id=(
+            message.reply_to_message.message_id
+            if message.reply_to_message
+            else None
+        ),
+        message_thread_id=message.message_thread_id,
+        disable_notification=True,
     )
