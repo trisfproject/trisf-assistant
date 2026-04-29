@@ -65,6 +65,14 @@ nano .env
 docker compose up -d
 ```
 
+`sql/schema.sql` is applied automatically only when MySQL initializes a fresh data directory. For an existing database, apply new schema changes from `sql/migrations/` manually.
+
+Apply the downtime tracking migration:
+
+```bash
+docker compose exec -T db mysql -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" < sql/migrations/20260429_add_downtime_events.sql
+```
+
 The production layout is expected to be:
 
 ```text
