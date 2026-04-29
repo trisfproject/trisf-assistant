@@ -181,6 +181,10 @@ async def downhistory_command(update: Update, context: ContextTypes.DEFAULT_TYPE
     cur = conn.cursor(DictCursor)
 
     if not arg:
+        year = now.year
+        month = now.month
+        month_str = f"{month:02d}"
+        history_title = f"{year}-{month_str}"
         start_date = datetime(now.year, now.month, 1)
         end_date = now
     else:
@@ -197,6 +201,8 @@ async def downhistory_command(update: Update, context: ContextTypes.DEFAULT_TYPE
                 )
                 return
 
+            month_str = f"{month:02d}"
+            history_title = f"{year}-{month_str}"
             start_date = datetime(year, month, 1)
 
             if month == 12:
@@ -213,12 +219,16 @@ async def downhistory_command(update: Update, context: ContextTypes.DEFAULT_TYPE
             start_date = datetime(now.year, now.month, 1) - timedelta(days=1)
             start_date = datetime(start_date.year, start_date.month, 1)
             end_date = datetime(now.year, now.month, 1)
+            month_str = f"{start_date.month:02d}"
+            history_title = f"{start_date.year}-{month_str}"
         elif arg == "7d":
             start_date = now - timedelta(days=7)
             end_date = now
+            history_title = "last 7 days"
         elif arg == "all":
             start_date = datetime(2000, 1, 1)
             end_date = now
+            history_title = "all"
         else:
             await update.message.reply_text(
                 "⚠️ Invalid format. Use:\n\n"
@@ -246,13 +256,20 @@ async def downhistory_command(update: Update, context: ContextTypes.DEFAULT_TYPE
         )
         return
 
-    text = "📊 Downtime history\n\n"
+    lines = []
 
-    for row in rows:
+    for idx, row in enumerate(rows, start=1):
         ended_at = row["ended_at"] or datetime.utcnow()
         seconds = int(
             (ended_at - row["started_at"]).total_seconds()
         )
-        text += f"{row['service']} ({format_duration(seconds)})\n"
+        duration = format_duration(seconds)
+        service = row["service"]
+        lines.append(f"{idx}. {service} ({duration})")
 
-    await update.message.reply_text(text)
+    message = (
+        f"📊 Downtime history {history_title}\n\n"
+        + "\n".join(lines)
+    )
+
+    await update.message.reply_text(message)
