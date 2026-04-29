@@ -1,3 +1,5 @@
+import asyncio
+
 from telegram import Update
 from telegram.ext import ContextTypes
 
@@ -14,6 +16,15 @@ async def can_pin(context, chat_id, user_id):
         return False
 
     return member.status in ("administrator", "creator")
+
+
+async def delete_later(bot, chat_id, message_id):
+    await asyncio.sleep(5)
+
+    try:
+        await bot.delete_message(chat_id, message_id)
+    except Exception:
+        pass
 
 
 async def pin_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -33,7 +44,7 @@ async def pin_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if not message.reply_to_message:
         await message.reply_text(
-            "⚠️ Reply to a message to pin it."
+            "⚠️ Reply to a message first."
         )
         return
 
@@ -43,26 +54,47 @@ async def pin_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
+    notify_mode = False
+
+    if context.args:
+        if context.args[0].lower() == "notify":
+            notify_mode = True
+
     try:
-        await context.bot.pin_chat_message(
-            chat_id=chat.id,
-            message_id=message.reply_to_message.message_id,
-            disable_notification=False,
+        await chat.pin_message(
+            message.reply_to_message.message_id,
+            disable_notification=not notify_mode,
         )
 
+    except Exception:
         await message.reply_text(
-            "📌 Message pinned"
+            "❌ I need pin permission to do that."
         )
+        return
 
-    except Exception as e:
-        if "ChatAdminRequired" in str(e):
-            await message.reply_text(
-                "⚠️ I need admin permission to pin messages in this chat."
-            )
-        else:
-            await message.reply_text(
-                "❌ Failed to pin message."
-            )
+    try:
+        await message.delete()
+    except Exception:
+        pass
+
+    confirmation_text = (
+        "📌 Message pinned (notification sent)"
+        if notify_mode
+        else "📌 Message pinned"
+    )
+
+    confirm = await chat.send_message(
+        confirmation_text,
+        disable_notification=not notify_mode,
+    )
+
+    asyncio.create_task(
+        delete_later(
+            context.bot,
+            confirm.chat_id,
+            confirm.message_id,
+        )
+    )
 
 
 async def unpin_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -80,12 +112,6 @@ async def unpin_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    if not message.reply_to_message:
-        await message.reply_text(
-            "⚠️ Reply to a pinned message to unpin it."
-        )
-        return
-
     if not await can_pin(context, chat.id, user_id):
         await message.reply_text(
             "⛔ You don't have permission to unpin messages."
@@ -93,21 +119,28 @@ async def unpin_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     try:
-        await context.bot.unpin_chat_message(
-            chat_id=chat.id,
-            message_id=message.reply_to_message.message_id,
-        )
+        await chat.unpin_all_messages()
 
+    except Exception:
         await message.reply_text(
-            "📌 Message unpinned"
+            "❌ I need pin permission to do that."
         )
+        return
 
-    except Exception as e:
-        if "ChatAdminRequired" in str(e):
-            await message.reply_text(
-                "⚠️ I need admin permission to unpin messages in this chat."
-            )
-        else:
-            await message.reply_text(
-                "❌ Failed to unpin message."
-            )
+    try:
+        await message.delete()
+    except Exception:
+        pass
+
+    confirm = await chat.send_message(
+        "📍 Message unpinned",
+        disable_notification=True,
+    )
+
+    asyncio.create_task(
+        delete_later(
+            context.bot,
+            confirm.chat_id,
+            confirm.message_id,
+        )
+    )
