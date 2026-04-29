@@ -155,8 +155,10 @@ async def help_button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE
     if data == "help_messages":
         await query.edit_message_text(
             "📍 Messages\n\n"
-            "/pin\nReply to a message to pin it\n\n"
-            "/unpin\nReply to a pinned message to unpin it\n\n"
+            "/pin\nPin replied message (silent)\n\n"
+            "/pin loud\nPin replied message with notification\n\n"
+            "/unpin\nRemove pinned message (silent)\n\n"
+            "/unpin loud\nRemove pinned message with notification\n\n"
             "/ghost\n"
             "Send anonymous relay message via bot\n\n"
             "/afk <reason>\n"

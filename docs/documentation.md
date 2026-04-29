@@ -577,10 +577,16 @@ Pin a message in the chat.
 
 Usage:
 
-Reply to a message:
+Reply to a message. By default, `/pin` uses silent mode:
 
 ```text
 /pin
+```
+
+Use loud mode to send a Telegram notification to group members:
+
+```text
+/pin loud
 ```
 
 Example:
@@ -607,20 +613,26 @@ Superusers
 
 ### /unpin
 
-Unpin a pinned message in the chat.
+Unpin pinned messages in the chat.
 
 Usage:
 
-Reply to a pinned message:
+Default silent mode:
 
 ```text
 /unpin
 ```
 
+Use loud mode to send a Telegram notification to group members:
+
+```text
+/unpin loud
+```
+
 Response:
 
 ```text
-📌 Message unpinned
+📍 Message unpinned
 ```
 
 Permissions:
@@ -637,13 +649,7 @@ If the bot is not admin in the group:
 Response:
 
 ```text
-⚠️ I need admin permission to pin messages in this chat.
-```
-
-For `/unpin`, the bot may reply:
-
-```text
-⚠️ I need admin permission to unpin messages in this chat.
+❌ I need pin permission to do that.
 ```
 
 ## Approval

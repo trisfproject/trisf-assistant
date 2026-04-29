@@ -57,7 +57,7 @@ async def pin_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     notify_mode = False
 
     if context.args:
-        if context.args[0].lower() == "notify":
+        if context.args[0].lower() == "loud":
             notify_mode = True
 
     pin_disable_notification = not notify_mode
@@ -120,6 +120,12 @@ async def unpin_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
+    notify_mode = False
+
+    if context.args:
+        if context.args[0].lower() == "loud":
+            notify_mode = True
+
     try:
         await chat.unpin_all_messages()
 
@@ -134,9 +140,15 @@ async def unpin_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception:
         pass
 
+    confirmation_text = (
+        "📍 Message unpinned (notification sent)"
+        if notify_mode
+        else "📍 Message unpinned"
+    )
+
     confirm = await chat.send_message(
-        "📍 Message unpinned",
-        disable_notification=True,
+        confirmation_text,
+        disable_notification=not notify_mode,
     )
 
     asyncio.create_task(
