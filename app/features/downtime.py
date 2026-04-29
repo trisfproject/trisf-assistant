@@ -1,3 +1,4 @@
+import re
 from datetime import datetime, timedelta
 
 from pymysql.cursors import DictCursor
@@ -175,41 +176,55 @@ async def downhistory_command(update: Update, context: ContextTypes.DEFAULT_TYPE
     conn = get_connection()
     cur = conn.cursor(DictCursor)
 
-    try:
-        if "-" in mode and len(mode.split("-")) == 2:
-            year, month = mode.split("-")
-            year = int(year)
-            month = int(month)
-            start = datetime(year, month, 1)
+    if re.fullmatch(r"\d{4}-\d{1,2}", mode):
+        year, month = mode.split("-")
+        year = int(year)
+        month = int(month)
 
-            if month == 12:
-                end = datetime(year + 1, 1, 1)
-            else:
-                end = datetime(year, month + 1, 1)
-        elif mode == "last":
-            start = datetime(now.year, now.month, 1) - timedelta(days=1)
-            start = datetime(start.year, start.month, 1)
-            end = datetime(now.year, now.month, 1)
-        elif mode == "7d":
-            start = now - timedelta(days=7)
-            end = now
-        elif mode == "all":
-            start = datetime(2000, 1, 1)
-            end = now
+        if month < 1 or month > 12:
+            await update.message.reply_text(
+                "⚠️ Invalid format. Use:\n"
+                "YYYY-MM\n"
+                "example:\n"
+                "/downhistory 2025-04"
+            )
+            return
+
+        start = datetime(year, month, 1)
+
+        if month == 12:
+            end = datetime(year + 1, 1, 1)
         else:
-            start = datetime(now.year, now.month, 1)
-            end = now
-    except Exception:
+            end = datetime(year, month + 1, 1)
+    elif mode == "last":
+        start = datetime(now.year, now.month, 1) - timedelta(days=1)
+        start = datetime(start.year, start.month, 1)
+        end = datetime(now.year, now.month, 1)
+    elif mode == "7d":
+        start = now - timedelta(days=7)
+        end = now
+    elif mode == "all":
+        start = datetime(2000, 1, 1)
+        end = now
+    elif mode == "month":
         start = datetime(now.year, now.month, 1)
         end = now
+    else:
+        await update.message.reply_text(
+            "⚠️ Invalid format. Use:\n"
+            "YYYY-MM\n"
+            "example:\n"
+            "/downhistory 2025-04"
+        )
+        return
 
     cur.execute(
         """
         SELECT service, started_at, ended_at
         FROM downtime_events
         WHERE chat_id=%s
-        AND started_at BETWEEN %s AND %s
-        AND status='closed'
+        AND started_at >= %s
+        AND started_at < %s
         ORDER BY started_at DESC
         """,
         (chat_id, start, end),
@@ -226,8 +241,9 @@ async def downhistory_command(update: Update, context: ContextTypes.DEFAULT_TYPE
     text = "📊 Downtime history\n\n"
 
     for row in rows:
+        ended_at = row["ended_at"] or datetime.utcnow()
         seconds = int(
-            (row["ended_at"] - row["started_at"]).total_seconds()
+            (ended_at - row["started_at"]).total_seconds()
         )
         text += f"{row['service']} ({format_duration(seconds)})\n"
 
