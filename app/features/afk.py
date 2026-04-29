@@ -1,150 +1,121 @@
-import datetime
-import logging
+from datetime import datetime
 
-from app.db import conn
-from app.runtime import check_group, is_restricted_mode_blocked
-
-logger = logging.getLogger(__name__)
+from telegram import Update
+from telegram.ext import ContextTypes
 
 
-def format_since(since):
-    if not since:
-        return "unknown time"
+AFK_USERS = {}
 
-    delta = datetime.datetime.now() - since
-    minutes = int(delta.total_seconds() // 60)
+
+def format_duration(seconds):
+    minutes = seconds // 60
 
     if minutes < 1:
-        return "just now"
-    if minutes == 1:
-        return "1 minute ago"
+        return f"{seconds}s"
 
-    return f"{minutes} minutes ago"
+    if minutes < 60:
+        return f"{minutes} minutes"
 
-
-def display_user(user):
-    if user.username:
-        return f"@{user.username}"
-    return user.full_name or str(user.id)
+    hours = minutes // 60
+    return f"{hours} hours"
 
 
-async def get_afk_status(chat, user):
-    cursor = conn.cursor()
-    cursor.execute(
-        """
-        SELECT reason,since
-        FROM afk_status
-        WHERE chat_id=%s AND user_id=%s
-        """,
-        (chat, user),
+async def afk_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user = update.effective_user
+    reason = " ".join(context.args) if context.args else "AFK"
+
+    AFK_USERS[user.id] = {
+        "reason": reason,
+        "since": datetime.utcnow(),
+        "first_name": user.first_name,
+        "username": user.username.lower() if user.username else None,
+    }
+
+    await update.message.reply_text(
+        f"😴 AFK mode enabled\n"
+        f"📝 Reason: {reason}"
     )
 
-    return cursor.fetchone()
 
-
-async def get_mentioned_afk_users(update, context):
+async def afk_check_mentions(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.message
-    chat = update.effective_chat.id
-    text = message.text or message.caption or ""
-    entities = message.entities or message.caption_entities or []
-    mentioned = {}
+    sender = update.effective_user
+
+    if not message:
+        return
+
+    notified_users = set()
 
     if message.reply_to_message and message.reply_to_message.from_user:
-        user = message.reply_to_message.from_user
-        if user.id != update.effective_user.id:
-            mentioned[user.id] = user
+        target_user = message.reply_to_message.from_user
+
+        if target_user.id in AFK_USERS and (not sender or target_user.id != sender.id):
+            await _reply_with_afk_status(message, target_user.id, target_user.first_name)
+            notified_users.add(target_user.id)
+
+    text = message.text or message.caption or ""
+    entities = message.entities or message.caption_entities or []
 
     for entity in entities:
+        target_user_id = None
+        target_name = None
+
         if entity.type == "text_mention" and entity.user:
-            if entity.user.id != update.effective_user.id:
-                mentioned[entity.user.id] = entity.user
+            target_user_id = entity.user.id
+            target_name = entity.user.first_name
 
         elif entity.type == "mention":
             username = text[entity.offset:entity.offset + entity.length].lstrip("@").lower()
-            if not username:
+
+            if context.bot.username and username == context.bot.username.lower():
                 continue
 
-            cursor = conn.cursor()
-            cursor.execute(
-                """
-                SELECT user_id
-                FROM afk_status
-                WHERE chat_id=%s
-                """,
-                (chat,),
-            )
-
-            for row in cursor.fetchall():
-                try:
-                    member = await context.bot.get_chat_member(chat, row[0])
-                except Exception:
-                    logger.exception("failed to inspect AFK mention user_id=%s", row[0])
-                    continue
-
-                user = member.user
-                if user.username and user.username.lower() == username:
-                    if user.id != update.effective_user.id:
-                        mentioned[user.id] = user
+            for uid, data in AFK_USERS.items():
+                if data.get("username") == username:
+                    target_user_id = uid
+                    target_name = data.get("first_name")
                     break
 
-    return mentioned
+        if (
+            target_user_id in AFK_USERS
+            and target_user_id not in notified_users
+            and (not sender or target_user_id != sender.id)
+        ):
+            await _reply_with_afk_status(message, target_user_id, target_name)
+            notified_users.add(target_user_id)
 
 
-async def afk(update, context):
-    if not await check_group(update):
+async def afk_auto_clear(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user = update.effective_user
+    message = update.message
+
+    if not user or not message:
         return
 
-    chat = update.effective_chat.id
-    user = update.effective_user.id
-    reason = " ".join(context.args) if context.args else "AFK"
+    if message.text and message.text.startswith("/afk"):
+        return
 
-    cursor = conn.cursor()
-    cursor.execute(
-        """
-        REPLACE INTO afk_status (chat_id,user_id,reason,since)
-        VALUES (%s,%s,%s,%s)
-        """,
-        (chat, user, reason, datetime.datetime.now()),
+    if user.id in AFK_USERS:
+        afk_data = AFK_USERS.pop(user.id)
+        duration = datetime.utcnow() - afk_data["since"]
+        seconds = int(duration.total_seconds())
+        formatted = format_duration(seconds)
+
+        await message.reply_text(
+            f"👋 Welcome back!\n"
+            f"⏱ AFK duration: {formatted}"
+        )
+
+
+async def _reply_with_afk_status(message, user_id, first_name):
+    afk_data = AFK_USERS[user_id]
+    duration = datetime.utcnow() - afk_data["since"]
+    seconds = int(duration.total_seconds())
+    formatted = format_duration(seconds)
+    display_name = first_name or afk_data.get("first_name") or "User"
+
+    await message.reply_text(
+        f"👤 {display_name} is currently AFK\n"
+        f"📝 Reason: {afk_data['reason']}\n"
+        f"⏱ AFK since: {formatted}"
     )
-
-    await update.message.reply_text(f"🌙 AFK: {reason}")
-
-
-async def afk_watcher(update, context):
-    if not update.message or not update.effective_user:
-        return
-
-    if update.message.text and update.message.text.startswith("/afk"):
-        return
-
-    chat = update.effective_chat.id
-    user = update.effective_user.id
-
-    if is_restricted_mode_blocked(chat, user):
-        return
-
-    current_status = await get_afk_status(chat, user)
-    if current_status:
-        cursor = conn.cursor()
-        cursor.execute(
-            """
-            DELETE FROM afk_status
-            WHERE chat_id=%s AND user_id=%s
-            """,
-            (chat, user),
-        )
-        await update.message.reply_text(
-            "🌙 Welcome back"
-        )
-
-    mentioned = await get_mentioned_afk_users(update, context)
-
-    for mentioned_user_id, mentioned_user in mentioned.items():
-        row = await get_afk_status(chat, mentioned_user_id)
-        if not row:
-            continue
-
-        reason, since = row
-        await update.message.reply_text(
-            f"🌙 User is AFK: {reason} (since {format_since(since)})"
-        )

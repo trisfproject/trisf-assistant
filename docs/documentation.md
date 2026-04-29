@@ -1,8 +1,8 @@
 # trisf-assistant Documentation
 
-trisf-assistant is a Telegram group assistant bot for internal teams. It stores operational notes, todos, reminders, approvals, on-call status, AFK status, audit entries, and backups in MySQL.
+**trisf-assistant** is a Telegram assistant bot built for internal team workflows.
 
-All group data is scoped by `chat_id`, so one group cannot read another group's notes, todos, reminders, approvals, or on-call status through normal commands.
+It provides shared notes, todos, reminders, approvals, on-call tracking, and small operational utilities directly inside Telegram, with all data safely stored per group using MySQL.
 
 ## Implemented Commands
 
@@ -814,13 +814,15 @@ Clear on-call status:
 
 ## AFK
 
-Set AFK status:
+Set global AFK status:
 
 ```text
+/afk lunch
 /afk meeting
+/afk driving
 ```
 
-When another user mentions an AFK user or replies to the AFK user's message, the bot replies with the AFK reason and how long the user has been AFK.
+AFK status is global across all chats. When another user mentions an AFK user or replies to the AFK user's message, the bot replies with the AFK reason and how long the user has been AFK.
 
 When the AFK user sends any new message, the bot clears the AFK status automatically and replies that the user is back.
 

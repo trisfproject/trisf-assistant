@@ -19,7 +19,11 @@ from app.features.admin_tools import (
     demote_command,
     promote_command,
 )
-from app.features.afk import afk, afk_watcher
+from app.features.afk import (
+    afk_auto_clear,
+    afk_check_mentions,
+    afk_command,
+)
 from app.features.audit import audit
 from app.features.backup import (
     export_handler,
@@ -110,7 +114,7 @@ def main():
     app.add_handler(CommandHandler("todo", todo))
     app.add_handler(CommandHandler("remind", remind))
     app.add_handler(CommandHandler("audit", audit))
-    app.add_handler(CommandHandler("afk", afk))
+    app.add_handler(CommandHandler("afk", afk_command))
     app.add_handler(CommandHandler("oncall", oncall_handler), group=-1)
     app.add_handler(CommandHandler("export", export_handler))
     app.add_handler(CommandHandler("import", import_handler))
@@ -138,7 +142,8 @@ def main():
         )
     )
     app.add_handler(MessageHandler(filters.TEXT, lookup))
-    app.add_handler(MessageHandler(filters.ALL, afk_watcher), group=1)
+    app.add_handler(MessageHandler(filters.ALL, afk_check_mentions), group=1)
+    app.add_handler(MessageHandler(filters.ALL, afk_auto_clear), group=2)
 
     async def post_init(app):
         app.bot_data["reminder_worker_task"] = asyncio.create_task(
