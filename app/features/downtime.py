@@ -175,17 +175,31 @@ async def downhistory_command(update: Update, context: ContextTypes.DEFAULT_TYPE
     conn = get_connection()
     cur = conn.cursor(DictCursor)
 
-    if mode == "last":
-        start = datetime(now.year, now.month, 1) - timedelta(days=1)
-        start = datetime(start.year, start.month, 1)
-        end = datetime(now.year, now.month, 1)
-    elif mode == "7d":
-        start = now - timedelta(days=7)
-        end = now
-    elif mode == "all":
-        start = datetime(2000, 1, 1)
-        end = now
-    else:
+    try:
+        if "-" in mode and len(mode.split("-")) == 2:
+            year, month = mode.split("-")
+            year = int(year)
+            month = int(month)
+            start = datetime(year, month, 1)
+
+            if month == 12:
+                end = datetime(year + 1, 1, 1)
+            else:
+                end = datetime(year, month + 1, 1)
+        elif mode == "last":
+            start = datetime(now.year, now.month, 1) - timedelta(days=1)
+            start = datetime(start.year, start.month, 1)
+            end = datetime(now.year, now.month, 1)
+        elif mode == "7d":
+            start = now - timedelta(days=7)
+            end = now
+        elif mode == "all":
+            start = datetime(2000, 1, 1)
+            end = now
+        else:
+            start = datetime(now.year, now.month, 1)
+            end = now
+    except Exception:
         start = datetime(now.year, now.month, 1)
         end = now
 
