@@ -1,4 +1,5 @@
 import re
+import logging
 from datetime import datetime, timedelta
 
 from pymysql.cursors import DictCursor
@@ -6,6 +7,9 @@ from telegram import Update
 from telegram.ext import ContextTypes
 
 from app.db import get_connection
+
+
+logger = logging.getLogger(__name__)
 
 
 def format_duration(seconds):
@@ -171,52 +175,56 @@ async def downlist_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def downhistory_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     now = datetime.utcnow()
-    mode = context.args[0] if context.args else "month"
+    arg = context.args[0] if context.args else None
 
     conn = get_connection()
     cur = conn.cursor(DictCursor)
 
-    if re.fullmatch(r"\d{4}-\d{1,2}", mode):
-        year, month = mode.split("-")
-        year = int(year)
-        month = int(month)
+    if not arg:
+        start_date = datetime(now.year, now.month, 1)
+        end_date = now
+    else:
+        match = re.match(r"^(\d{4})-(\d{1,2})$", arg)
 
-        if month < 1 or month > 12:
+        if match:
+            year = int(match.group(1))
+            month = int(match.group(2))
+
+            if month < 1 or month > 12:
+                await update.message.reply_text(
+                    "⚠️ Invalid format. Use:\n\n"
+                    "/downhistory 2025-04"
+                )
+                return
+
+            start_date = datetime(year, month, 1)
+
+            if month == 12:
+                end_date = datetime(year + 1, 1, 1)
+            else:
+                end_date = datetime(year, month + 1, 1)
+
+            logger.info(
+                "downhistory filter month: %s-%s",
+                year,
+                month,
+            )
+        elif arg == "last":
+            start_date = datetime(now.year, now.month, 1) - timedelta(days=1)
+            start_date = datetime(start_date.year, start_date.month, 1)
+            end_date = datetime(now.year, now.month, 1)
+        elif arg == "7d":
+            start_date = now - timedelta(days=7)
+            end_date = now
+        elif arg == "all":
+            start_date = datetime(2000, 1, 1)
+            end_date = now
+        else:
             await update.message.reply_text(
-                "⚠️ Invalid format. Use:\n"
-                "YYYY-MM\n"
-                "example:\n"
+                "⚠️ Invalid format. Use:\n\n"
                 "/downhistory 2025-04"
             )
             return
-
-        start = datetime(year, month, 1)
-
-        if month == 12:
-            end = datetime(year + 1, 1, 1)
-        else:
-            end = datetime(year, month + 1, 1)
-    elif mode == "last":
-        start = datetime(now.year, now.month, 1) - timedelta(days=1)
-        start = datetime(start.year, start.month, 1)
-        end = datetime(now.year, now.month, 1)
-    elif mode == "7d":
-        start = now - timedelta(days=7)
-        end = now
-    elif mode == "all":
-        start = datetime(2000, 1, 1)
-        end = now
-    elif mode == "month":
-        start = datetime(now.year, now.month, 1)
-        end = now
-    else:
-        await update.message.reply_text(
-            "⚠️ Invalid format. Use:\n"
-            "YYYY-MM\n"
-            "example:\n"
-            "/downhistory 2025-04"
-        )
-        return
 
     cur.execute(
         """
@@ -227,7 +235,7 @@ async def downhistory_command(update: Update, context: ContextTypes.DEFAULT_TYPE
         AND started_at < %s
         ORDER BY started_at DESC
         """,
-        (chat_id, start, end),
+        (chat_id, start_date, end_date),
     )
 
     rows = cur.fetchall()
