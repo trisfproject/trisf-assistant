@@ -60,12 +60,10 @@ async def pin_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if context.args[0].lower() == "loud":
             notify_mode = True
 
-    pin_disable_notification = not notify_mode
-
     try:
         await chat.pin_message(
             message.reply_to_message.message_id,
-            disable_notification=pin_disable_notification,
+            disable_notification=not notify_mode,
         )
 
     except Exception:
