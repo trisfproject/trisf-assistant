@@ -25,6 +25,14 @@ def format_duration(seconds):
     return f"{hours} hours"
 
 
+def calculate_duration_minutes(started_at, ended_at):
+    if ended_at is None:
+        return 0
+
+    delta = ended_at - started_at
+    return int(delta.total_seconds() // 60)
+
+
 async def down_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args:
         await update.message.reply_text(
@@ -252,23 +260,29 @@ async def downhistory_command(update: Update, context: ContextTypes.DEFAULT_TYPE
 
     if not rows:
         await update.message.reply_text(
-            "📊 No downtime history."
+            f"📊 Downtime history {history_title}\n\n"
+            "No downtime incidents recorded."
         )
         return
 
     lines = []
+    total_incidents = len(rows)
+    total_minutes = 0
 
     for idx, row in enumerate(rows, start=1):
-        ended_at = row["ended_at"] or datetime.utcnow()
-        seconds = int(
-            (ended_at - row["started_at"]).total_seconds()
-        )
-        duration = format_duration(seconds)
         service = row["service"]
-        lines.append(f"{idx}. {service} ({duration})")
+        started_at = row["started_at"]
+        ended_at = row["ended_at"]
+
+        minutes = calculate_duration_minutes(started_at, ended_at)
+        total_minutes += minutes
+
+        lines.append(f"{idx}. {service} ({minutes} minutes)")
 
     message = (
         f"📊 Downtime history {history_title}\n\n"
+        f"Total incidents: {total_incidents}\n"
+        f"Total downtime: {total_minutes} minutes\n\n"
         + "\n".join(lines)
     )
 
