@@ -53,7 +53,11 @@ from app.features.network import (
 from app.features.notes import delete, lookup, notes, save, update_note
 from app.features.oncall import oncall_handler
 from app.features.password import password_command
-from app.features.pin import pin_command, unpin_command
+from app.features.pin import (
+    cleanup_pin_service_message,
+    pin_command,
+    unpin_command,
+)
 from app.features.purge import purge_command
 from app.features.reminders import remind
 from app.features.todos import todo
@@ -143,6 +147,10 @@ def main():
     app.add_handler(CommandHandler("ghost", ghost_command))
     app.add_handler(CommandHandler("pin", pin_command))
     app.add_handler(CommandHandler("unpin", unpin_command))
+    app.add_handler(
+        MessageHandler(filters.StatusUpdate.PINNED_MESSAGE, cleanup_pin_service_message),
+        group=-1,
+    )
     app.add_handler(CallbackQueryHandler(help_button_handler, pattern="^help_"))
 
     app.add_handler(

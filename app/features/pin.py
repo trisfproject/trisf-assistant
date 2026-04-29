@@ -6,6 +6,9 @@ from telegram.ext import ContextTypes
 from app.permissions import is_superuser, is_writer
 
 
+PENDING_SILENT_PIN_SERVICE_MESSAGES = {}
+
+
 async def can_pin(context, chat_id, user_id):
     if is_superuser(user_id) or is_writer(chat_id, user_id):
         return True
@@ -23,6 +26,36 @@ async def delete_later(bot, chat_id, message_id):
 
     try:
         await bot.delete_message(chat_id, message_id)
+    except Exception:
+        pass
+
+
+async def clear_pending_pin_service_message_later(chat_id, target_message_id):
+    await asyncio.sleep(30)
+
+    if PENDING_SILENT_PIN_SERVICE_MESSAGES.get(chat_id) == target_message_id:
+        PENDING_SILENT_PIN_SERVICE_MESSAGES.pop(chat_id, None)
+
+
+async def cleanup_pin_service_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    message = update.message
+    chat = update.effective_chat
+
+    if not message or not chat or not message.pinned_message:
+        return
+
+    target_message_id = PENDING_SILENT_PIN_SERVICE_MESSAGES.get(chat.id)
+
+    if target_message_id != message.pinned_message.message_id:
+        return
+
+    PENDING_SILENT_PIN_SERVICE_MESSAGES.pop(chat.id, None)
+
+    try:
+        await context.bot.delete_message(
+            chat_id=chat.id,
+            message_id=message.message_id,
+        )
     except Exception:
         pass
 
@@ -60,17 +93,30 @@ async def pin_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if context.args[0].lower() == "loud":
             notify_mode = True
 
+    target_message_id = message.reply_to_message.message_id
+
+    if not notify_mode:
+        PENDING_SILENT_PIN_SERVICE_MESSAGES[chat.id] = target_message_id
+
     try:
         await chat.pin_message(
-            message.reply_to_message.message_id,
+            target_message_id,
             disable_notification=not notify_mode,
         )
 
     except Exception:
+        if not notify_mode:
+            PENDING_SILENT_PIN_SERVICE_MESSAGES.pop(chat.id, None)
+
         await message.reply_text(
             "❌ I need pin permission to do that."
         )
         return
+
+    if not notify_mode:
+        asyncio.create_task(
+            clear_pending_pin_service_message_later(chat.id, target_message_id)
+        )
 
     try:
         await message.delete()
