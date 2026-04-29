@@ -33,6 +33,12 @@ from app.features.backup import (
 from app.features.chatid import chatid
 from app.features.coffee import coffee_command
 from app.features.delete_message import delete_command
+from app.features.downtime import (
+    down_command,
+    downhistory_command,
+    downlist_command,
+    up_command,
+)
 from app.features.ghost import ghost_command
 from app.features.groups import allowedgroups, allowgroup, removegroup
 from app.features.health import health, status
@@ -114,6 +120,10 @@ def main():
     app.add_handler(CommandHandler("todo", todo))
     app.add_handler(CommandHandler("remind", remind))
     app.add_handler(CommandHandler("audit", audit))
+    app.add_handler(CommandHandler("down", down_command))
+    app.add_handler(CommandHandler("up", up_command))
+    app.add_handler(CommandHandler("downlist", downlist_command))
+    app.add_handler(CommandHandler("downhistory", downhistory_command))
     app.add_handler(CommandHandler("afk", afk_command))
     app.add_handler(CommandHandler("oncall", oncall_handler), group=-1)
     app.add_handler(CommandHandler("export", export_handler))

@@ -27,3 +27,8 @@ def connect_with_retry():
 
 
 conn=connect_with_retry()
+
+
+def get_connection():
+ conn.ping(reconnect=True)
+ return conn

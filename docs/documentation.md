@@ -2,7 +2,7 @@
 
 **trisf-assistant** is a Telegram assistant bot built for internal team workflows.
 
-It provides shared notes, todos, reminders, approvals, on-call tracking, and small operational utilities directly inside Telegram, with all data safely stored per group using MySQL.
+It provides shared notes, todos, reminders, approvals, on-call tracking, downtime tracking, and small operational utilities directly inside Telegram, with group data safely scoped by `chat_id` using MySQL.
 
 ## Implemented Commands
 
@@ -29,6 +29,10 @@ Current registered command handlers:
 /todo
 /remind
 /audit
+/down
+/up
+/downlist
+/downhistory
 /afk
 /oncall
 /export
@@ -811,6 +815,29 @@ Clear on-call status:
 ```
 
 `/oncall` and `/oncall status` are available to everyone in allowed groups. `/oncall set` and `/oncall clear` require a group admin or superuser.
+
+## Downtime Tracking
+
+Track per-group service downtime:
+
+```text
+/down service
+/down service note about the incident
+/up service
+/downlist
+/downhistory
+/downhistory last
+/downhistory 7d
+/downhistory all
+```
+
+`/down <service> [note]` starts an active downtime event for the current group and prevents duplicate active downtime for the same service.
+
+`/up <service>` resolves the active downtime event, records the resolver, and calculates duration.
+
+`/downlist` shows active downtime for the current group.
+
+`/downhistory` shows closed downtime events for the current month by default. Use `last` for last month, `7d` for the last 7 days, or `all` for all closed downtime history.
 
 ## AFK
 

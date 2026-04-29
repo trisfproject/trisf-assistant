@@ -37,6 +37,9 @@ def build_help_keyboard(show_admin=False):
             InlineKeyboardButton("🌐 Network", callback_data="help_network"),
             InlineKeyboardButton("👤 Info", callback_data="help_info"),
         ],
+        [
+            InlineKeyboardButton("📉 Downtime", callback_data="help_downtime"),
+        ],
     ]
 
     channel_button = InlineKeyboardButton(
@@ -167,6 +170,21 @@ async def help_button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE
         await query.edit_message_text(
             "⏰ Reminders\n\n"
             "/remind <time> <text>",
+            reply_markup=submenu_keyboard(),
+        )
+        return
+
+    if data == "help_downtime":
+        await query.edit_message_text(
+            "📉 Downtime\n\n"
+            "/down <service> [note]\n"
+            "Start downtime tracking\n\n"
+            "/up <service>\n"
+            "Resolve downtime\n\n"
+            "/downlist\n"
+            "List active downtime\n\n"
+            "/downhistory\n"
+            "Show downtime history",
             reply_markup=submenu_keyboard(),
         )
         return

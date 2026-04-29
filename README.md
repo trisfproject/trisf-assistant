@@ -5,7 +5,7 @@
 # trisf-assistant
 
 **trisf-assistant** is a Dockerized Telegram group assistant built for internal team workflows.  
-It helps manage shared notes, todos, reminders, approvals, group access control, moderation tools, on-call status, AFK notices, simple network diagnostics, backups, and runtime health checks — all scoped per group and backed by MySQL.
+It helps manage shared notes, todos, reminders, approvals, group access control, moderation tools, on-call status, downtime tracking, AFK notices, simple network diagnostics, backups, and runtime health checks — all scoped per group and backed by MySQL.
 
 The Docker Compose stack starts both the bot and MySQL.  
 The database initializes automatically from `sql/schema.sql` on first startup.
@@ -25,6 +25,7 @@ Superusers can bootstrap access for a new group using `/allowgroup`.
 | Approvals | `/approve`, `/revoke`, `/approvelist` |
 | Group access | `/allowgroup`, `/removegroup`, `/allowedgroups`, `/allowlist`, `/groups` |
 | On-call | `/oncall` |
+| Downtime | `/down`, `/up`, `/downlist`, `/downhistory` |
 | Audit | `/audit` |
 | Backup | `/export`, `/import` |
 | Network | `/ping`, `/dns`, `/http`, `/whois` |
