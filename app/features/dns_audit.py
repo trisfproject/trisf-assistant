@@ -16,7 +16,6 @@ except ImportError:
     Cloudflare = None
 
 DNS_AUDIT_TYPES = {"A", "AAAA", "CNAME"}
-ACTIVE_STATUS_CODES = {200, 301, 302, 307, 308, 401, 403, 404}
 CLOUDFLARE_ORIGIN_ERROR_CODES = {521, 522, 523, 524, 525, 526}
 
 
@@ -158,13 +157,26 @@ async def dns_audit_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             except Exception:
                 ip = "dns_failed"
 
+            url = f"https://{record_name}"
+            final_url = ""
+
             try:
-                response = httpx.head(
-                    f"https://{record_name}",
-                    timeout=5,
-                    follow_redirects=True,
-                )
+                async with httpx.AsyncClient() as client:
+                    response = await client.head(
+                        url,
+                        timeout=5,
+                        follow_redirects=True,
+                    )
+
+                    if response.status_code == 405:
+                        response = await client.get(
+                            url,
+                            timeout=5,
+                            follow_redirects=True,
+                        )
+
                 status_code = response.status_code
+                final_url = str(response.url)
             except Exception:
                 status_code = None
 
@@ -174,6 +186,9 @@ async def dns_audit_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             elif status_code is None:
                 audit_status = "inactive"
                 https_status = "timeout"
+            elif "/login" in final_url:
+                audit_status = "active"
+                https_status = str(status_code)
             elif status_code in CLOUDFLARE_ORIGIN_ERROR_CODES:
                 audit_status = "inactive"
                 https_status = str(status_code)
@@ -181,11 +196,8 @@ async def dns_audit_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             elif status_code >= 500:
                 audit_status = "inactive"
                 https_status = str(status_code)
-            elif status_code in ACTIVE_STATUS_CODES:
-                audit_status = "active"
-                https_status = str(status_code)
             else:
-                audit_status = "inactive"
+                audit_status = "active"
                 https_status = str(status_code)
 
             if ip != "dns_failed":
