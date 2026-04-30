@@ -16,6 +16,8 @@ except ImportError:
     Cloudflare = None
 
 DNS_AUDIT_TYPES = {"A", "AAAA", "CNAME"}
+ACTIVE_STATUS_CODES = {200, 301, 302, 307, 308, 401, 403, 404}
+CLOUDFLARE_ORIGIN_ERROR_CODES = {521, 522, 523, 524, 525, 526}
 
 
 def get_field(value, field):
@@ -82,6 +84,7 @@ async def dns_audit_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         active_records = []
         inactive_records = []
+        cloudflare_origin_errors = 0
 
         for record in records:
             record_type = get_field(record, "type")
@@ -92,26 +95,43 @@ async def dns_audit_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             record_name = get_field(record, "name")
             ip = ""
             provider = "unknown"
-            http_status = "n/a"
-            status = "inactive"
 
             try:
                 ip = socket.gethostbyname(record_name)
-                status = "active"
             except Exception:
                 ip = "dns_failed"
-                status = "inactive"
 
-            if status == "active":
-                try:
-                    response = httpx.get(
-                        f"http://{record_name}",
-                        timeout=3,
-                    )
-                    http_status = str(response.status_code)
-                except Exception:
-                    http_status = "timeout"
+            try:
+                response = httpx.head(
+                    f"https://{record_name}",
+                    timeout=5,
+                    follow_redirects=True,
+                )
+                status_code = response.status_code
+            except Exception:
+                status_code = None
 
+            if ip == "dns_failed":
+                audit_status = "inactive"
+                https_status = "dns_failed"
+            elif status_code is None:
+                audit_status = "inactive"
+                https_status = "timeout"
+            elif status_code in CLOUDFLARE_ORIGIN_ERROR_CODES:
+                audit_status = "inactive"
+                https_status = str(status_code)
+                cloudflare_origin_errors += 1
+            elif status_code >= 500:
+                audit_status = "inactive"
+                https_status = str(status_code)
+            elif status_code in ACTIVE_STATUS_CODES:
+                audit_status = "active"
+                https_status = str(status_code)
+            else:
+                audit_status = "inactive"
+                https_status = str(status_code)
+
+            if ip != "dns_failed":
                 try:
                     obj = IPWhois(ip)
                     result = obj.lookup_rdap()
@@ -124,11 +144,11 @@ async def dns_audit_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 ip,
                 record_type,
                 provider,
-                status,
-                http_status,
+                audit_status,
+                https_status,
             ]
 
-            if status == "active":
+            if audit_status == "active":
                 active_records.append(row)
             else:
                 inactive_records.append(row)
@@ -142,7 +162,7 @@ async def dns_audit_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "type",
             "provider",
             "status",
-            "http_status",
+            "https_status",
         ]
 
         active_file = tempfile.NamedTemporaryFile(delete=False, suffix="_active.csv")
@@ -174,3 +194,10 @@ async def dns_audit_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         os.unlink(active_file.name)
         os.unlink(inactive_file.name)
+
+        await update.message.reply_text(
+            "DNS audit completed\n\n"
+            f"Active records: {len(active_records)}\n"
+            f"Inactive records: {len(inactive_records)}\n"
+            f"Cloudflare origin errors detected: {cloudflare_origin_errors}"
+        )

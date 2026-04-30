@@ -503,6 +503,19 @@ Audit all Cloudflare zones:
 
 Exports CSV reports for every zone.
 
+CSV columns:
+
+```text
+record
+ip
+type
+provider
+status
+https_status
+```
+
+DNS audit uses HTTPS `HEAD` checks. Status codes `200`, `301`, `302`, `307`, `308`, `401`, `403`, and `404` are treated as active records. Cloudflare-origin errors `521-526`, other `5xx` responses, timeouts, and DNS failures are treated as inactive records.
+
 Requirements:
 
 ```text
