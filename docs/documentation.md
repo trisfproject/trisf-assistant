@@ -516,6 +516,8 @@ https_status
 
 DNS audit uses HTTPS `HEAD` checks with redirects enabled. If an endpoint rejects `HEAD` with `405`, the bot retries with `GET`. Login redirects where the final URL contains `/login` are treated as active records. Cloudflare-origin errors `521-526`, other `5xx` responses, timeouts, and DNS failures are treated as inactive records.
 
+For Cloudflare-proxied records, DNS audit uses the Cloudflare API record `content` value as the origin IP instead of resolving the public DNS name, so provider detection does not report Cloudflare edge IPs.
+
 DNS audit detects infrastructure provider automatically using ASN lookup.
 
 Supported provider detection:

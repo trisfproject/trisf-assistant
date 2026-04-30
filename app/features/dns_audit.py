@@ -26,6 +26,13 @@ def get_field(value, field):
     return getattr(value, field)
 
 
+def get_optional_field(value, field, default=None):
+    if isinstance(value, dict):
+        return value.get(field, default)
+
+    return getattr(value, field, default)
+
+
 def detect_provider(ip):
     try:
         lookup = IPWhois(ip).lookup_rdap()
@@ -149,13 +156,18 @@ async def dns_audit_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 continue
 
             record_name = get_field(record, "name")
+            record_content = get_field(record, "content")
+            record_proxied = bool(get_optional_field(record, "proxied", False))
             ip = ""
             provider = "unknown"
 
-            try:
-                ip = socket.gethostbyname(record_name)
-            except Exception:
-                ip = "dns_failed"
+            if record_proxied:
+                ip = record_content or "dns_failed"
+            else:
+                try:
+                    ip = socket.gethostbyname(record_name)
+                except Exception:
+                    ip = "dns_failed"
 
             url = f"https://{record_name}"
             final_url = ""
