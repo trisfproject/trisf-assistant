@@ -44,7 +44,7 @@ Current registered command handlers:
 /chatid
 /ping
 /dns
-/dns-audit
+/dns_audit
 /http
 /whois
 /pw
@@ -485,7 +485,7 @@ parsed registration info
 Audit a Cloudflare DNS zone:
 
 ```text
-/dns-audit example.com
+/dns_audit example.com
 ```
 
 Exports:
@@ -498,7 +498,7 @@ example.com_inactive.csv
 Audit all Cloudflare zones:
 
 ```text
-/dns-audit all
+/dns_audit all
 ```
 
 Exports CSV reports for every zone.

@@ -141,7 +141,7 @@ def main():
     app.add_handler(CommandHandler("chatid", chatid))
     app.add_handler(CommandHandler("ping", ping_command))
     app.add_handler(CommandHandler("dns", dns_command))
-    app.add_handler(CommandHandler("dns-audit", dns_audit_command))
+    app.add_handler(CommandHandler("dns_audit", dns_audit_command))
     app.add_handler(CommandHandler("http", http_command))
     app.add_handler(CommandHandler("whois", whois_command))
     app.add_handler(CommandHandler("pw", password_command))

@@ -47,8 +47,8 @@ async def dns_audit_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args:
         await update.message.reply_text(
             "Usage:\n"
-            "/dns-audit example.com\n"
-            "/dns-audit all"
+            "/dns_audit example.com\n"
+            "/dns_audit all"
         )
         return
 
