@@ -44,6 +44,7 @@ Current registered command handlers:
 /chatid
 /ping
 /dns
+/dns-audit
 /http
 /whois
 /pw
@@ -477,6 +478,54 @@ Response format:
 🌐 Whois result
 
 parsed registration info
+```
+
+## DNS Audit
+
+Audit a Cloudflare DNS zone:
+
+```text
+/dns-audit example.com
+```
+
+Exports:
+
+```text
+example.com_active.csv
+example.com_inactive.csv
+```
+
+Audit all Cloudflare zones:
+
+```text
+/dns-audit all
+```
+
+Exports CSV reports for every zone.
+
+Requirements:
+
+```text
+CF_API_TOKEN
+```
+
+Permission:
+
+```text
+Superuser only
+```
+
+Permissions required:
+
+```text
+Zone.Zone.Read
+Zone.DNS.Read
+```
+
+Scope:
+
+```text
+All zones
 ```
 
 ## Utility Commands

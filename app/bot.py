@@ -33,6 +33,7 @@ from app.features.backup import (
 from app.features.chatid import chatid
 from app.features.coffee import coffee_command
 from app.features.delete_message import delete_command
+from app.features.dns_audit import dns_audit_command
 from app.features.downtime import (
     down_command,
     downhistory_command,
@@ -140,6 +141,7 @@ def main():
     app.add_handler(CommandHandler("chatid", chatid))
     app.add_handler(CommandHandler("ping", ping_command))
     app.add_handler(CommandHandler("dns", dns_command))
+    app.add_handler(CommandHandler("dns-audit", dns_audit_command))
     app.add_handler(CommandHandler("http", http_command))
     app.add_handler(CommandHandler("whois", whois_command))
     app.add_handler(CommandHandler("pw", password_command))

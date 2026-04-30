@@ -242,6 +242,14 @@ async def help_button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE
                 "Restore data from a backup JSON file."
             )
 
+            if is_superuser(user_id):
+                text += (
+                    "\n\n/dns-audit example.com\n"
+                    "Audit DNS zone and export CSV report\n\n"
+                    "/dns-audit all\n"
+                    "Audit all Cloudflare zones and export CSV reports"
+                )
+
             if show_admin_management:
                 text += (
                     "\n\n/admins\n"

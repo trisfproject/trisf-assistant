@@ -26,7 +26,7 @@ Superusers can bootstrap access for a new group using `/allowgroup`.
 | Group access | `/allowgroup`, `/removegroup`, `/allowedgroups`, `/allowlist`, `/groups` |
 | On-call | `/oncall` |
 | Downtime | `/down`, `/up`, `/downlist`, `/downhistory` |
-| Audit | `/audit` |
+| Audit | `/audit`, `/dns-audit` |
 | Backup | `/export`, `/import` |
 | Network | `/ping`, `/dns`, `/http`, `/whois` |
 | Utilities | `/pw`, `/health`, `/status` |

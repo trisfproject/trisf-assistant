@@ -3,3 +3,7 @@ aiohttp
 pymysql
 python-dotenv
 cryptography
+cloudflare
+dnspython
+ipwhois
+httpx
