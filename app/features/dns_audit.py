@@ -157,17 +157,16 @@ async def dns_audit_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
             record_name = get_field(record, "name")
             record_content = get_field(record, "content")
-            record_proxied = bool(get_optional_field(record, "proxied", False))
-            ip = ""
+            resolved_ip = None
             provider = "unknown"
 
-            if record_proxied:
-                ip = record_content or "dns_failed"
-            else:
+            if record_type == "A":
+                resolved_ip = record_content
+            elif record_type == "CNAME":
                 try:
-                    ip = socket.gethostbyname(record_name)
+                    resolved_ip = socket.gethostbyname(record_content)
                 except Exception:
-                    ip = "dns_failed"
+                    resolved_ip = None
 
             url = f"https://{record_name}"
             final_url = ""
@@ -192,7 +191,7 @@ async def dns_audit_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             except Exception:
                 status_code = None
 
-            if ip == "dns_failed":
+            if resolved_ip is None:
                 audit_status = "inactive"
                 https_status = "dns_failed"
             elif status_code is None:
@@ -212,12 +211,12 @@ async def dns_audit_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 audit_status = "active"
                 https_status = str(status_code)
 
-            if ip != "dns_failed":
-                provider = detect_provider(ip)
+            if resolved_ip is not None:
+                provider = detect_provider(resolved_ip)
 
             row = [
                 record_name,
-                ip,
+                resolved_ip or "dns_failed",
                 record_type,
                 audit_status,
                 provider,
