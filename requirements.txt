@@ -7,3 +7,4 @@ cloudflare
 dnspython
 ipwhois
 httpx
+requests

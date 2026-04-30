@@ -506,7 +506,14 @@ Exports CSV reports for every zone.
 Requirements:
 
 ```text
-CF_API_TOKEN
+CF_API_TOKEN environment variable
+cloudflare python SDK
+```
+
+Example:
+
+```env
+CF_API_TOKEN=xxxxx
 ```
 
 Permission:

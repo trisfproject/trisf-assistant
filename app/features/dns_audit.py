@@ -3,7 +3,6 @@ import os
 import socket
 import tempfile
 
-import CloudFlare
 import httpx
 from ipwhois import IPWhois
 from telegram import Update
@@ -11,7 +10,19 @@ from telegram.ext import ContextTypes
 
 from app.permissions import is_superuser
 
+try:
+    from cloudflare import Cloudflare
+except ImportError:
+    Cloudflare = None
+
 DNS_AUDIT_TYPES = {"A", "AAAA", "CNAME"}
+
+
+def get_field(value, field):
+    if isinstance(value, dict):
+        return value[field]
+
+    return getattr(value, field)
 
 
 async def dns_audit_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -23,10 +34,14 @@ async def dns_audit_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    cf_api_token = os.getenv("CF_API_TOKEN")
+    if Cloudflare is None:
+        await update.message.reply_text("❌ Cloudflare SDK not installed.")
+        return
 
-    if not cf_api_token:
-        await update.message.reply_text("❌ CF_API_TOKEN not configured")
+    token = os.getenv("CF_API_TOKEN")
+
+    if not token:
+        await update.message.reply_text("❌ CF_API_TOKEN not configured.")
         return
 
     if not context.args:
@@ -41,13 +56,13 @@ async def dns_audit_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text(f"🌐 DNS audit started: {zone_arg}")
 
-    cf = CloudFlare.CloudFlare(token=cf_api_token)
+    cf = Cloudflare(api_token=token)
 
     try:
         if zone_arg == "all":
-            zones = cf.zones.get()
+            zones = list(cf.zones.list())
         else:
-            zones = cf.zones.get(params={"name": zone_arg})
+            zones = list(cf.zones.list(name=zone_arg))
     except Exception as exc:
         await update.message.reply_text(f"❌ Cloudflare API error: {str(exc)}")
         return
@@ -57,11 +72,11 @@ async def dns_audit_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     for zone in zones:
-        zone_name = zone["name"]
-        zone_id = zone["id"]
+        zone_name = get_field(zone, "name")
+        zone_id = get_field(zone, "id")
 
         try:
-            records = cf.zones.dns_records.get(zone_id)
+            records = list(cf.dns.records.list(zone_id=zone_id))
         except Exception:
             continue
 
@@ -69,11 +84,12 @@ async def dns_audit_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         inactive_records = []
 
         for record in records:
-            if record["type"] not in DNS_AUDIT_TYPES:
+            record_type = get_field(record, "type")
+
+            if record_type not in DNS_AUDIT_TYPES:
                 continue
 
-            record_name = record["name"]
-            record_type = record["type"]
+            record_name = get_field(record, "name")
             ip = ""
             provider = "unknown"
             http_status = "n/a"
