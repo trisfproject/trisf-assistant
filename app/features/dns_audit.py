@@ -27,6 +27,63 @@ def get_field(value, field):
     return getattr(value, field)
 
 
+def detect_provider(ip):
+    try:
+        lookup = IPWhois(ip).lookup_rdap()
+        org = lookup.get("network", {}).get("name", "")
+
+        if not org:
+            return "unknown"
+
+        org = org.lower()
+
+        if "google" in org:
+            return "GCP"
+
+        if "amazon" in org:
+            return "AWS"
+
+        if "microsoft" in org:
+            return "Azure"
+
+        if "huawei" in org:
+            return "Huawei"
+
+        if "alibaba" in org:
+            return "Alibaba"
+
+        if "aliyun" in org:
+            return "Alibaba"
+
+        if "alicloud" in org:
+            return "Alibaba"
+
+        if "tencent" in org:
+            return "Tencent"
+
+        if "oracle" in org:
+            return "OCI"
+
+        if "cloudflare" in org:
+            return "Cloudflare"
+
+        if "wowrack" in org:
+            return "Wowrack"
+
+        if "biznet" in org:
+            return "Biznet"
+
+        if "digitalocean" in org:
+            return "DigitalOcean"
+
+        if "linode" in org:
+            return "Linode"
+
+        return org
+    except Exception:
+        return "unknown"
+
+
 async def dns_audit_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
 
@@ -132,19 +189,14 @@ async def dns_audit_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 https_status = str(status_code)
 
             if ip != "dns_failed":
-                try:
-                    obj = IPWhois(ip)
-                    result = obj.lookup_rdap()
-                    provider = result["network"]["name"]
-                except Exception:
-                    provider = "unknown"
+                provider = detect_provider(ip)
 
             row = [
                 record_name,
                 ip,
                 record_type,
-                provider,
                 audit_status,
+                provider,
                 https_status,
             ]
 
@@ -160,8 +212,8 @@ async def dns_audit_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "record",
             "ip",
             "type",
-            "provider",
             "status",
+            "provider",
             "https_status",
         ]
 

@@ -509,12 +509,33 @@ CSV columns:
 record
 ip
 type
-provider
 status
+provider
 https_status
 ```
 
 DNS audit uses HTTPS `HEAD` checks. Status codes `200`, `301`, `302`, `307`, `308`, `401`, `403`, and `404` are treated as active records. Cloudflare-origin errors `521-526`, other `5xx` responses, timeouts, and DNS failures are treated as inactive records.
+
+DNS audit detects infrastructure provider automatically using ASN lookup.
+
+Supported provider detection:
+
+```text
+Huawei
+GCP
+AWS
+Azure
+Alibaba
+Tencent
+OCI
+Cloudflare
+Biznet
+Wowrack
+DigitalOcean
+Linode
+```
+
+The `provider` column appears inside exported CSV results, including inactive records that still resolve to an IP address.
 
 Requirements:
 
