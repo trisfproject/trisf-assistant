@@ -503,6 +503,8 @@ Audit all Cloudflare zones:
 
 Exports CSV reports for every zone.
 
+DNS audit runs as a background task. The bot remains responsive and sends CSV results when the audit completes.
+
 CSV columns:
 
 ```text

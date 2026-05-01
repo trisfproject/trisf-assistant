@@ -1,3 +1,4 @@
+import asyncio
 import csv
 import os
 import socket
@@ -90,6 +91,17 @@ def detect_provider(ip):
         return "unknown"
 
 
+def list_zones(cf, zone_arg):
+    if zone_arg == "all":
+        return list(cf.zones.list())
+
+    return list(cf.zones.list(name=zone_arg))
+
+
+def list_records(cf, zone_id):
+    return list(cf.dns.records.list(zone_id=zone_id))
+
+
 async def dns_audit_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
 
@@ -99,6 +111,22 @@ async def dns_audit_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
+    if not context.args:
+        await update.message.reply_text(
+            "Usage:\n"
+            "/dns_audit example.com\n"
+            "/dns_audit all"
+        )
+        return
+
+    await update.message.reply_text(
+        "📡 DNS audit started. I'll send results when ready."
+    )
+
+    asyncio.create_task(run_dns_audit(update, context))
+
+
+async def run_dns_audit(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if Cloudflare is None:
         await update.message.reply_text("❌ Cloudflare SDK not installed.")
         return
@@ -119,15 +147,10 @@ async def dns_audit_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     zone_arg = context.args[0].lower()
 
-    await update.message.reply_text(f"🌐 DNS audit started: {zone_arg}")
-
     cf = Cloudflare(api_token=token)
 
     try:
-        if zone_arg == "all":
-            zones = list(cf.zones.list())
-        else:
-            zones = list(cf.zones.list(name=zone_arg))
+        zones = await asyncio.to_thread(list_zones, cf, zone_arg)
     except Exception as exc:
         await update.message.reply_text(f"❌ Cloudflare API error: {str(exc)}")
         return
@@ -141,7 +164,7 @@ async def dns_audit_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         zone_id = get_field(zone, "id")
 
         try:
-            records = list(cf.dns.records.list(zone_id=zone_id))
+            records = await asyncio.to_thread(list_records, cf, zone_id)
         except Exception:
             continue
 
@@ -164,7 +187,10 @@ async def dns_audit_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 resolved_ip = record_content
             elif record_type == "CNAME":
                 try:
-                    resolved_ip = socket.gethostbyname(record_content)
+                    resolved_ip = await asyncio.to_thread(
+                        socket.gethostbyname,
+                        record_content,
+                    )
                 except Exception:
                     resolved_ip = None
 
@@ -212,7 +238,7 @@ async def dns_audit_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 https_status = str(status_code)
 
             if resolved_ip is not None:
-                provider = detect_provider(resolved_ip)
+                provider = await asyncio.to_thread(detect_provider, resolved_ip)
 
             row = [
                 record_name,
